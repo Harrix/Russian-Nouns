@@ -34,10 +34,10 @@ def main():
                 else:
                     dictionary[word]["answer_from_wiktionary"] = response.status_code
 
-                save_dictionary_json(dictionary, dictionary_json_filename)
+                # save_dictionary_json(dictionary, dictionary_json_filename)
                 print("-------------------------")
 
-        #save_dictionary_json(dictionary, dictionary_json_filename)
+        save_dictionary_json(dictionary, dictionary_json_filename)
     else:
         create_dictionary_json_filename(dictionary_filename, dictionary_json_filename)
 
