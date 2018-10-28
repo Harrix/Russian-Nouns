@@ -1,7 +1,9 @@
 from pathlib import Path
 import json
 import re
-import requests
+import urllib.parse
+import grequests
+import time
 
 
 def main():
@@ -9,37 +11,54 @@ def main():
     dictionary_json_filename = "data.json"
     file = Path(dictionary_json_filename)
     if file.is_file():
-        dictionary = read_dictionary_json(dictionary_json_filename)
-
-        for word, entry in dictionary.items():
-            if (
-                    entry["is_noun_by_dictionary"] and
-                    entry["is_possible_adjective"] and
-                    entry["answer_from_wiktionary"] == "null"
-            ):
-                response = requests.get('https://ru.wiktionary.org/wiki/' + word)
-                print('{} status_code = {}'.format(word, response.status_code))
-                if response.status_code == 200:
-                    html = response.text
-                    is_noun_by_wiktionary = False
-                    if "title=\"существительное\">Существительное</a>" in html:
-                        is_noun_by_wiktionary = True
-                    if "title=\"выступает в роли существительного\">субстантивир.</span>" in html:
-                        is_noun_by_wiktionary = True
-
-                    if is_noun_by_wiktionary:
-                        dictionary[word]["answer_from_wiktionary"] = True
-                    else:
-                        print("is_noun_by_wiktionary = {}".format(is_noun_by_wiktionary))
-                else:
-                    dictionary[word]["answer_from_wiktionary"] = response.status_code
-
-                # save_dictionary_json(dictionary, dictionary_json_filename)
-                print("-------------------------")
-
-        save_dictionary_json(dictionary, dictionary_json_filename)
+        start = time.time()
+        analysis_dictionary_json_filename(dictionary_json_filename)
+        end = time.time()
+        print(end - start)
     else:
         create_dictionary_json_filename(dictionary_filename, dictionary_json_filename)
+
+
+def analysis_dictionary_json_filename(dictionary_json_filename):
+    dictionary = read_dictionary_json(dictionary_json_filename)
+
+    urls = []
+    for word, entry in dictionary.items():
+        if (
+                entry["is_noun_by_dictionary"] and
+                entry["is_possible_adjective"] and
+                entry["answer_from_wiktionary"] == "null"
+        ):
+            urls.append('https://ru.wiktionary.org/wiki/' + word)
+
+    requests = (grequests.get(u) for u in urls)
+    responses = grequests.map(requests)
+    for response in responses:
+        if response is not None:
+            word = urllib.parse.unquote(response.url.rsplit("/", 1)[1])
+            print('{} status_code = {}'.format(word, response.status_code))
+
+            if response.status_code == 200:
+                html = response.text
+                is_noun_by_wiktionary = False
+                if "title=\"существительное\">Существительное</a>" in html:
+                    is_noun_by_wiktionary = True
+                if "title=\"выступает в роли существительного\">субстантивир.</span>" in html:
+                    is_noun_by_wiktionary = True
+
+                if is_noun_by_wiktionary:
+                    dictionary[word]["answer_from_wiktionary"] = True
+                else:
+                    print("is_noun_by_wiktionary = {}".format(is_noun_by_wiktionary))
+            else:
+                dictionary[word]["answer_from_wiktionary"] = response.status_code
+
+
+        else:
+            print("None")
+        print("-------------------------")
+
+    save_dictionary_json(dictionary, dictionary_json_filename)
 
 
 def save_dictionary_json(dictionary, dictionary_json_filename):
@@ -108,14 +127,7 @@ def create_dictionary_json_filename(dictionary_filename, dictionary_json_filenam
 
 
 def test():
-    # url = 'https://ru.wiktionary.org/wiki/' + quote('длиннокрылые')
-    # f = urllib.request.urlopen(url)
-    # html = f.read().decode('utf-8')
-    response = requests.get('https://ru.wiktionary.org/wiki/длиннокрылые')
-    html = response.text
-    print(response.status_code)
-    with open("output.txt", "w", encoding='utf8') as text_file:
-        text_file.write(html)
+    pass
 
 
 if __name__ == '__main__':
