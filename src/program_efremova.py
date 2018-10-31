@@ -69,7 +69,7 @@ def generated_json():
         if re.match(r'(ж|м|ср|мн)\.(.*)$', definition) or re.match(r'(1\.|I) (ж|м|ср|мн)\.(.*)$', definition):
             is_noun_by_dictionary = True
 
-        is_possible_adjective = False
+        is_possible_not_noun = False
         if (
                 word.endswith('ая') or
                 word.endswith('ее') or
@@ -84,12 +84,12 @@ def generated_json():
                 word.endswith('ья') or
                 word.endswith('яя')
         ):
-            is_possible_adjective = True
+            is_possible_not_noun = True
 
         entry = dict()
         entry['definition'] = definition
         entry['is_noun_by_dictionary'] = is_noun_by_dictionary
-        entry['is_possible_adjective'] = is_possible_adjective
+        entry['is_possible_not_noun'] = is_possible_not_noun
         entry['answer_from_wiktionary'] = 'null'
         dictionary[word] = entry
 
@@ -113,7 +113,7 @@ def how_many_articles_need_to_check():
             count_nouns_by_dictionary += 1
         if (
                 entry['is_noun_by_dictionary'] and
-                entry['is_possible_adjective'] and
+                entry['is_possible_not_noun'] and
                 entry['answer_from_wiktionary'] == 'null'
         ):
             count_check += 1
@@ -133,7 +133,7 @@ def print_list_of_words(answer_from_wiktionary):
 
     count = 0
     for word, entry in dictionary.items():
-        if entry['is_noun_by_dictionary'] and entry['is_possible_adjective']:
+        if entry['is_noun_by_dictionary'] and entry['is_possible_not_noun']:
             is_print = False
 
             if answer_from_wiktionary == 'null' and entry['answer_from_wiktionary'] == 'null':
@@ -163,7 +163,7 @@ def check_words_on_site():
     for word, entry in dictionary.items():
         if (
                 entry['is_noun_by_dictionary'] and
-                entry['is_possible_adjective'] and
+                entry['is_possible_not_noun'] and
                 entry['answer_from_wiktionary'] == 'null'
         ):
             try:
@@ -172,30 +172,43 @@ def check_words_on_site():
                 if response.status_code == 200:
                     html = response.text
                     is_noun_by_wiktionary = False
-                    is_adjective_by_wiktionary = False
-                    if 'title="существительное">Существительное</a>' in html:
-                        is_noun_by_wiktionary = True
-                    if 'title="выступает в роли существительного">субстантивир.</span>' in html:
-                        is_noun_by_wiktionary = True
-                    if 'Существительное' in html and 'Прилагательное' not in html:
+                    is_not_noun_by_wiktionary = False
+                    if (
+                            'title="существительное">Существительное</a>' in html or
+                            'Существительное.' in html or
+                            'title="выступает в роли существительного">субстантивир.</span>' in html or
+                            ('Существительное' in html and 'Прилагательное' not in html) or
+                            'Существительное, одушевлённое,  тип склонения по ' in html
+                    ):
                         is_noun_by_wiktionary = True
 
-                    if 'title="прилагательное">Прилагательное</a>' in html:
-                        is_adjective_by_wiktionary = True
-                    if 'title="причастие">Причастие</a>' in html:
-                        is_adjective_by_wiktionary = True
-                    if 'Существительное' not in html and 'Прилагательное' in html:
-                        is_adjective_by_wiktionary = True
+                    if (
+                            'title="прилагательное">Прилагательное</a>' in html or
+                            'title="причастие">Причастие</a>' in html or
+                            'title="причастие">причастие</a>' in html or
+                            'title="наречие">Наречие</a>' in html or
+                            'title="деепричастие">деепричастие</a>' in html or
+                            ('Существительное' not in html and 'Прилагательное' in html) or
+                            ('Существительное' not in html and 'прилагательного' in html) or
+                            ('Существительное' not in html and 'Местоименное прилагательное' in html) or
+                            ('Существительное' not in html and 'Притяжательное местоимение' in html) or
+                            ('Существительное' not in html and 'Притяжательное прилагательное' in html) or
+                            ('Существительное' not in html and 'Числительное' in html) or
+                            ('Существительное' not in html and 'Порядковое числительное' in html) or
+                            ('Существительное' not in html and 'Местоимение' in html) or
+                            ('Существительное' not in html and 'Указательное местоимение' in html)
+                    ):
+                        is_not_noun_by_wiktionary = True
 
                     if is_noun_by_wiktionary:
                         dictionary[word]['answer_from_wiktionary'] = 'noun'
                         print('answer_from_wiktionary = noun')
 
-                    if is_adjective_by_wiktionary:
-                        dictionary[word]['answer_from_wiktionary'] = 'adjective'
-                        print('answer_from_wiktionary = adjective')
+                    if is_not_noun_by_wiktionary:
+                        dictionary[word]['answer_from_wiktionary'] = 'not_noun'
+                        print('answer_from_wiktionary = not_noun')
 
-                    if not is_noun_by_wiktionary and not is_adjective_by_wiktionary:
+                    if not is_noun_by_wiktionary and not is_not_noun_by_wiktionary:
                         print('Need more checks')
                 else:
                     dictionary[word]['answer_from_wiktionary'] = response.status_code
