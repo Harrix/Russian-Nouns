@@ -19,7 +19,9 @@ def main():
         print('1 - Clear all temporary files')
         print('2 - Generated file {}'.format(dictionary_json_filename))
         print('3 - How many articles need to check on {}'.format(url))
-        print('4 - Check the words on  {}'.format(dictionary_json_filename))
+        print('4 - Check the words on {}'.format(dictionary_json_filename))
+        print('5 - Print a list of unchecked words on {}'.format(dictionary_json_filename))
+        print('6 - Print a list of words on {} with 404 error'.format(dictionary_json_filename))
         print('10 - Exit')
 
         command = int(input('Enter command number '))
@@ -31,6 +33,10 @@ def main():
             how_many_articles_need_to_check()
         if command == 4:
             check_words_on_site()
+        if command == 5:
+            print_list_of_words('null')
+        if command == 6:
+            print_list_of_words('404')
         if command == 10:
             break
 
@@ -119,6 +125,34 @@ def how_many_articles_need_to_check():
     print_time(start, end)
 
 
+def print_list_of_words(answer_from_wiktionary):
+    start = time.time()
+    if not is_exist_json():
+        return
+    dictionary = read_json()
+
+    count = 0
+    for word, entry in dictionary.items():
+        if entry['is_noun_by_dictionary'] and entry['is_possible_adjective']:
+            is_print = False
+
+            if answer_from_wiktionary == 'null' and entry['answer_from_wiktionary'] == 'null':
+                is_print = True
+
+            if answer_from_wiktionary == '404' and entry['answer_from_wiktionary'] == 404:
+                is_print = True
+
+            if is_print:
+                print(word)
+                print('answer_from_wiktionary = {}'.format(entry['answer_from_wiktionary']))
+                print('-------------------------')
+                count += 1
+
+    print('Words: {}'.format(count))
+    end = time.time()
+    print_time(start, end)
+
+
 def check_words_on_site():
     start = time.time()
     if not is_exist_json():
@@ -143,15 +177,21 @@ def check_words_on_site():
                         is_noun_by_wiktionary = True
                     if 'title="выступает в роли существительного">субстантивир.</span>' in html:
                         is_noun_by_wiktionary = True
+                    if 'Существительное' in html and 'Прилагательное' not in html:
+                        is_noun_by_wiktionary = True
 
                     if 'title="прилагательное">Прилагательное</a>' in html:
+                        is_adjective_by_wiktionary = True
+                    if 'Существительное' not in html and 'Прилагательное' in html:
                         is_adjective_by_wiktionary = True
 
                     if is_noun_by_wiktionary:
                         dictionary[word]['answer_from_wiktionary'] = 'noun'
+                        print('answer_from_wiktionary = noun')
 
                     if is_adjective_by_wiktionary:
                         dictionary[word]['answer_from_wiktionary'] = 'adjective'
+                        print('answer_from_wiktionary = adjective')
 
                     if not is_noun_by_wiktionary and not is_adjective_by_wiktionary:
                         print('Need more checks')
