@@ -182,6 +182,8 @@ def check_words_on_site():
 
                     if 'title="прилагательное">Прилагательное</a>' in html:
                         is_adjective_by_wiktionary = True
+                    if 'title="причастие">Причастие</a>' in html:
+                        is_adjective_by_wiktionary = True
                     if 'Существительное' not in html and 'Прилагательное' in html:
                         is_adjective_by_wiktionary = True
 
