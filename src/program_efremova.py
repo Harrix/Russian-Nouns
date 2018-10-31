@@ -27,17 +27,17 @@ def main():
         command = int(input('Enter command number '))
         if command == 1:
             clear_all_temporary_files()
-        if command == 2:
+        elif command == 2:
             generated_json()
-        if command == 3:
+        elif command == 3:
             how_many_articles_need_to_check()
-        if command == 4:
+        elif command == 4:
             check_words_on_site()
-        if command == 5:
+        elif command == 5:
             print_list_of_words('null')
-        if command == 6:
+        elif command == 6:
             print_list_of_words('404')
-        if command == 10:
+        elif command == 10:
             break
 
 
