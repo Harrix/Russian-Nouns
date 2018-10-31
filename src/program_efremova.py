@@ -8,6 +8,7 @@ import os
 dictionary_filename = 'efremova.txt'
 dictionary_json_filename = 'data.json'
 url = 'https://ru.wiktionary.org/wiki/'
+url_second = 'https://dic.academic.ru/searchall.php?SWord='
 
 
 def main():
@@ -19,7 +20,7 @@ def main():
         print('1 - Clear all temporary files')
         print('2 - Generated file {}'.format(dictionary_json_filename))
         print('3 - How many articles need to check on {}'.format(url))
-        print('4 - Check the words on {}'.format(dictionary_json_filename))
+        print('4 - Check the words on sites')
         print('5 - Print a list of unchecked words on {}'.format(dictionary_json_filename))
         print('6 - Print a list of words on {} with 404 error'.format(dictionary_json_filename))
         print('10 - Exit')
@@ -32,7 +33,7 @@ def main():
         elif command == 3:
             how_many_articles_need_to_check()
         elif command == 4:
-            check_words_on_site()
+            check_words_on_sites()
         elif command == 5:
             print_list_of_words('null')
         elif command == 6:
@@ -153,7 +154,7 @@ def print_list_of_words(answer_from_wiktionary):
     print_time(start, end)
 
 
-def check_words_on_site():
+def check_words_on_sites():
     start = time.time()
     if not is_exist_json():
         return
@@ -222,6 +223,45 @@ def check_words_on_site():
                 print("Error: ConnectionError")
                 time.sleep(1)
 
+    i = 0
+    for word, entry in dictionary.items():
+        if (
+                entry['is_noun_by_dictionary'] and
+                entry['is_possible_not_noun'] and
+                entry['answer_from_wiktionary'] == 404
+        ):
+            try:
+                response = requests.get(url_second + word)
+                print('{} status_code = {}'.format(word, response.status_code))
+                if response.status_code == 200:
+                    html = response.text
+                    is_noun_by_wiktionary = False
+                    is_not_noun_by_wiktionary = False
+
+                    if re.search(
+                            re.escape(word) + r'</a><\/strong> — сущ\.(.*?)<\/p>\n<p class="src"><a href="\/\/dic\.academic\.ru\/contents.nsf\/dic_synonims\/">Словарь синонимов<\/a><\/p>',
+                            html, re.S):
+                        is_noun_by_wiktionary = True
+
+                    if is_noun_by_wiktionary:
+                        dictionary[word]['answer_from_wiktionary'] = 'noun'
+                        print('answer_from_wiktionary = noun')
+
+                    # if is_not_noun_by_wiktionary:
+                    #     dictionary[word]['answer_from_wiktionary'] = 'not_noun'
+                    #     print('answer_from_wiktionary = not_noun')
+
+                    if not is_noun_by_wiktionary:
+                        print('Need more checks')
+                print('-------------------------')
+
+                i += 1
+                if i % 100 == 0:
+                    save_json(dictionary)
+            except ConnectionError:
+                print("Error: ConnectionError")
+                time.sleep(1)
+
     save_json(dictionary)
     print('Analysis of a dictionary using the {} ended'.format(url))
     end = time.time()
@@ -263,6 +303,7 @@ def is_exist_dictionary():
 
 
 def test():
+    #print(urllib.parse.quote_plus('безносая', safe=''))
     pass
 
 
