@@ -9,10 +9,39 @@ dictionary_filename = 'efremova.txt'
 dictionary_json_filename = 'data.json'
 
 
-def main():
-    if not is_exist_dictionary():
-        return
+def if_exist_dictionary(func):
+    def wrapper():
+        file = Path(dictionary_filename)
+        if not file.is_file():
+            print('Файл {} не существует. Программа не может быть выполнена'.format(dictionary_filename))
+            return
+        func()
 
+    return wrapper
+
+
+def if_exist_json(func):
+    def wrapper():
+        file = Path(dictionary_json_filename)
+        if not file.is_file():
+            print('Файл {} не существует. Его нужно сгенерировать первоначально'.format(dictionary_json_filename))
+            return
+        func()
+
+    return wrapper
+
+
+def function_execution_time(func):
+    def wrapper():
+        start = time.time()
+        func()
+        end = time.time()
+        print('Время выполнения функции: {}'.format(time.strftime('%H:%M:%S', time.gmtime(end - start))))
+
+    return wrapper
+
+
+def main():
     menu = [
         {'text': 'Очистить временные файлы', 'function': clear_all_temporary_files},
         {'text': 'Сгенерировать файл {}'.format(dictionary_json_filename), 'function': generated_json},
@@ -31,19 +60,10 @@ def main():
         command = int(input('Введите номер команды (любой другой номер завершит программу): '))
         if command > len(menu) or command < 0:
             break
-        if 'params' not in menu[command]:
-            menu[command]['function']()
+        if 'params' not in menu[command - 1]:
+            menu[command - 1]['function']()
         else:
-            menu[command]['function'](menu[command]['params'])
-
-
-def function_execution_time(func):
-    def wrapper():
-        start = time.time()
-        func()
-        end = time.time()
-        print('Время выполнения функции: {}'.format(time.strftime('%H:%M:%S', time.gmtime(end - start))))
-    return wrapper
+            menu[command - 1]['function'](menu[command - 1]['params'])
 
 
 @function_execution_time
@@ -54,15 +74,14 @@ def clear_all_temporary_files():
             print('Файл {} удален'.format(dictionary_json_filename))
         else:
             print('Файл {} не существует'.format(dictionary_json_filename))
+
     delete_file(dictionary_json_filename)
     print('Временных файлов больше нет')
 
 
 @function_execution_time
+@if_exist_dictionary
 def generated_json():
-    if not is_exist_dictionary():
-        return
-
     file = Path(dictionary_filename)
     with open(file, encoding='utf8') as f:
         lines = f.read().splitlines()
@@ -104,9 +123,8 @@ def generated_json():
 
 
 @function_execution_time
+@if_exist_dictionary
 def how_many_articles_need_to_check():
-    if not is_exist_json():
-        return
     dictionary = read_json()
 
     count_all = 0
@@ -129,9 +147,8 @@ def how_many_articles_need_to_check():
 
 
 @function_execution_time
+@if_exist_json
 def print_list_of_words(answer_from_wiktionary):
-    if not is_exist_json():
-        return
     dictionary = read_json()
 
     count = 0
@@ -154,9 +171,9 @@ def print_list_of_words(answer_from_wiktionary):
     print('Слов: {}'.format(count))
 
 
+@function_execution_time
+@if_exist_json
 def check_words_on_sites():
-    if not is_exist_json():
-        return
     dictionary = read_json()
 
     i = 0
@@ -280,20 +297,6 @@ def read_json():
         dictionary = json.loads(f.read())
     print('Файл ' + dictionary_json_filename + ' открыт')
     return dictionary
-
-
-def is_exist_json():
-    file = Path(dictionary_json_filename)
-    if not file.is_file():
-        print('Файл {} не существует. Его нужно сгенерировать первоначально.'.format(dictionary_json_filename))
-    return file.is_file()
-
-
-def is_exist_dictionary():
-    file = Path(dictionary_filename)
-    if not file.is_file():
-        print('Файл {} не существует. Программа не может быть выполнена.'.format(dictionary_filename))
-    return file.is_file()
 
 
 def test():
