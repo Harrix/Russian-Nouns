@@ -7,47 +7,47 @@ import os
 
 dictionary_filename = 'efremova.txt'
 dictionary_json_filename = 'data.json'
-url = 'https://ru.wiktionary.org/wiki/'
-url_second = 'https://dic.academic.ru/searchall.php?SWord='
 
 
 def main():
     if not is_exist_dictionary():
         return
 
+    menu = {
+        1: {'text': 'Очистить временные файлы', 'function': clear_all_temporary_files},
+        2: {'text': 'Сгенерировать файл {}'.format(dictionary_json_filename), 'function': generated_json},
+        3: {'text': 'Сколько слов нужно проверить на сайтах', 'function': how_many_articles_need_to_check},
+        4: {'text': 'Вывести список непроверенных слов (answer_from_wiktionary = null)',
+            'function': print_list_of_words, 'params': 'null'},
+        5: {'text': 'Вывести список непроверенных слов c ошибкой 404  (answer_from_wiktionary = 404)',
+            'function': print_list_of_words, 'params': '404'},
+        6: {'text': 'Проверить подозрительные слова на сайтах', 'function': check_words_on_sites}
+    }
+
     while True:
         print('')
-        print('1 - Clear all temporary files')
-        print('2 - Generated file {}'.format(dictionary_json_filename))
-        print('3 - How many articles need to check on {}'.format(url))
-        print('4 - Check the words on sites')
-        print('5 - Print a list of unchecked words on {}'.format(dictionary_json_filename))
-        print('6 - Print a list of words on {} with 404 error'.format(dictionary_json_filename))
-        print('10 - Exit')
-
-        command = int(input('Enter command number '))
-        if command == 1:
-            clear_all_temporary_files()
-        elif command == 2:
-            generated_json()
-        elif command == 3:
-            how_many_articles_need_to_check()
-        elif command == 4:
-            check_words_on_sites()
-        elif command == 5:
-            print_list_of_words('null')
-        elif command == 6:
-            print_list_of_words('404')
-        elif command == 10:
+        for key, value in menu.items():
+            print('{} - {}'.format(key, value['text']))
+        command = int(input('Введите номер команды (любой другой номер завершит программу): '))
+        if command not in menu:
             break
+        if 'params' not in menu[command]:
+            menu[command]['function']()
+        else:
+            menu[command]['function'](menu[command]['params'])
 
 
 def clear_all_temporary_files():
+    def delete_file(filename):
+        if Path(dictionary_json_filename).is_file():
+            os.remove(dictionary_json_filename)
+            print('Файл {} удален'.format(dictionary_json_filename))
+        else:
+            print('Файл {} не существует'.format(dictionary_json_filename))
+
     start = time.time()
-    file = Path(dictionary_json_filename)
-    if file.is_file():
-        os.remove(dictionary_json_filename)
-    print('All temporary files deleted')
+    delete_file(dictionary_json_filename)
+    print('Временных файлов больше нет')
     end = time.time()
     print_time(start, end)
 
@@ -119,9 +119,9 @@ def how_many_articles_need_to_check():
         ):
             count_check += 1
 
-    print('All words: {}'.format(count_all))
-    print('All nouns by dictionary: {}'.format(count_nouns_by_dictionary))
-    print('It remains to check words: {}'.format(count_check))
+    print('Все слова: {}'.format(count_all))
+    print('Количество существительных по Ефремовой: {}'.format(count_nouns_by_dictionary))
+    print('Нужно проверить на сайтах: {}'.format(count_check))
     end = time.time()
     print_time(start, end)
 
@@ -149,7 +149,7 @@ def print_list_of_words(answer_from_wiktionary):
                 print('-------------------------')
                 count += 1
 
-    print('Words: {}'.format(count))
+    print('Слов: {}'.format(count))
     end = time.time()
     print_time(start, end)
 
@@ -168,7 +168,7 @@ def check_words_on_sites():
                 entry['answer_from_wiktionary'] == 'null'
         ):
             try:
-                response = requests.get(url + word)
+                response = requests.get('https://ru.wiktionary.org/wiki/' + word)
                 print('{} status_code = {}'.format(word, response.status_code))
                 if response.status_code == 200:
                     html = response.text
@@ -231,7 +231,7 @@ def check_words_on_sites():
                 entry['answer_from_wiktionary'] == 404
         ):
             try:
-                response = requests.get(url_second + word)
+                response = requests.get('https://dic.academic.ru/searchall.php?SWord=' + word)
                 print('{} status_code = {}'.format(word, response.status_code))
                 if response.status_code == 200:
                     html = response.text
@@ -239,7 +239,8 @@ def check_words_on_sites():
                     is_not_noun_by_wiktionary = False
 
                     if re.search(
-                            re.escape(word) + r'</a><\/strong> — сущ\.(.*?)<\/p>\n<p class="src"><a href="\/\/dic\.academic\.ru\/contents.nsf\/dic_synonims\/">Словарь синонимов<\/a><\/p>',
+                            re.escape(
+                                word) + r'</a><\/strong> — сущ\.(.*?)<\/p>\n<p class="src"><a href="\/\/dic\.academic\.ru\/contents.nsf\/dic_synonims\/">Словарь синонимов<\/a><\/p>',
                             html, re.S):
                         is_noun_by_wiktionary = True
 
@@ -259,51 +260,51 @@ def check_words_on_sites():
                 if i % 100 == 0:
                     save_json(dictionary)
             except ConnectionError:
-                print("Error: ConnectionError")
+                print("Ошибка: ConnectionError")
                 time.sleep(1)
 
     save_json(dictionary)
-    print('Analysis of a dictionary using the {} ended'.format(url))
+    print('Проверка подозрительных слов завершена')
     end = time.time()
     print_time(start, end)
 
 
 def print_time(start, end):
-    print('Function execution time: {}'.format(end - start))
+    print('Время выполнения функции: {}'.format(time.strftime('%H:%M:%S', time.gmtime(end - start))))
 
 
 def save_json(dictionary):
     file = Path(dictionary_json_filename)
-    action = 'updated' if file.is_file() else 'created'
+    action = 'обновлен' if file.is_file() else 'создан'
     with open(dictionary_json_filename, 'w', encoding='utf8') as outfile:
         json.dump(dictionary, outfile, ensure_ascii=False, indent=4)
-    print('File {} {}'.format(dictionary_json_filename, action))
+    print('Файл {} {}'.format(dictionary_json_filename, action))
 
 
 def read_json():
     file = Path(dictionary_json_filename)
     with open(file, encoding='utf8') as f:
         dictionary = json.loads(f.read())
-    print('File ' + dictionary_json_filename + ' opened')
+    print('Файл ' + dictionary_json_filename + ' открыт')
     return dictionary
 
 
 def is_exist_json():
     file = Path(dictionary_json_filename)
     if not file.is_file():
-        print('File {} not exists. This file needs to be generated.'.format(dictionary_json_filename))
+        print('Файл {} не существует. Его нужно сгенерировать первоначально.'.format(dictionary_json_filename))
     return file.is_file()
 
 
 def is_exist_dictionary():
     file = Path(dictionary_filename)
     if not file.is_file():
-        print('File {} not exists. The program cannot work.'.format(dictionary_filename))
+        print('Файл {} не существует. Программа не может быть выполнена.'.format(dictionary_filename))
     return file.is_file()
 
 
 def test():
-    #print(urllib.parse.quote_plus('безносая', safe=''))
+    # print(urllib.parse.quote_plus('безносая', safe=''))
     pass
 
 
