@@ -13,23 +13,23 @@ def main():
     if not is_exist_dictionary():
         return
 
-    menu = {
-        1: {'text': 'Очистить временные файлы', 'function': clear_all_temporary_files},
-        2: {'text': 'Сгенерировать файл {}'.format(dictionary_json_filename), 'function': generated_json},
-        3: {'text': 'Сколько слов нужно проверить на сайтах', 'function': how_many_articles_need_to_check},
-        4: {'text': 'Вывести список непроверенных слов (answer_from_wiktionary = null)',
-            'function': print_list_of_words, 'params': 'null'},
-        5: {'text': 'Вывести список непроверенных слов c ошибкой 404  (answer_from_wiktionary = 404)',
-            'function': print_list_of_words, 'params': '404'},
-        6: {'text': 'Проверить подозрительные слова на сайтах', 'function': check_words_on_sites}
-    }
+    menu = [
+        {'text': 'Очистить временные файлы', 'function': clear_all_temporary_files},
+        {'text': 'Сгенерировать файл {}'.format(dictionary_json_filename), 'function': generated_json},
+        {'text': 'Сколько слов нужно проверить на сайтах', 'function': how_many_articles_need_to_check},
+        {'text': 'Вывести список непроверенных слов (answer_from_wiktionary = null)',
+         'function': print_list_of_words, 'params': 'null'},
+        {'text': 'Вывести список непроверенных слов c ошибкой 404  (answer_from_wiktionary = 404)',
+         'function': print_list_of_words, 'params': '404'},
+        {'text': 'Проверить подозрительные слова на сайтах', 'function': check_words_on_sites}
+    ]
 
     while True:
         print('')
-        for key, value in menu.items():
-            print('{} - {}'.format(key, value['text']))
+        for index, item in enumerate(menu):
+            print('{} - {}'.format(index + 1, item['text']))
         command = int(input('Введите номер команды (любой другой номер завершит программу): '))
-        if command not in menu:
+        if command > len(menu) or command < 0:
             break
         if 'params' not in menu[command]:
             menu[command]['function']()
