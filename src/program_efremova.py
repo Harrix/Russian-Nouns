@@ -41,32 +41,6 @@ def function_execution_time(func):
     return wrapper
 
 
-@if_exist_dictionary
-def main():
-    menu = [
-        {'text': 'Очистить временные файлы', 'function': clear_all_temporary_files},
-        {'text': 'Сгенерировать файл {}'.format(dictionary_json_filename), 'function': generated_json},
-        {'text': 'Сколько слов нужно проверить на сайтах', 'function': how_many_articles_need_to_check},
-        {'text': 'Вывести список непроверенных слов (answer_from_sites = null)',
-         'function': print_list_of_words, 'params': 'null'},
-        {'text': 'Вывести список непроверенных слов c ошибкой 404  (answer_from_sites = 404)',
-         'function': print_list_of_words, 'params': '404'},
-        {'text': 'Проверить подозрительные слова на сайтах', 'function': check_words_on_sites}
-    ]
-
-    while True:
-        print('')
-        for index, item in enumerate(menu):
-            print('{} - {}'.format(index + 1, item['text']))
-        command = int(input('Введите номер команды (любой другой номер завершит программу): '))
-        if command > len(menu) or command < 0:
-            break
-        if 'params' not in menu[command - 1]:
-            menu[command - 1]['function']()
-        else:
-            menu[command - 1]['function'](menu[command - 1]['params'])
-
-
 @function_execution_time
 def clear_all_temporary_files():
     def delete_file(filename):
@@ -298,6 +272,32 @@ def read_json():
         dictionary = json.loads(f.read())
     print('Файл ' + dictionary_json_filename + ' открыт')
     return dictionary
+
+
+@if_exist_dictionary
+def main():
+    menu = [
+        {'text': 'Очистить временные файлы', 'function': clear_all_temporary_files},
+        {'text': 'Сгенерировать файл {}'.format(dictionary_json_filename), 'function': generated_json},
+        {'text': 'Сколько слов нужно проверить на сайтах', 'function': how_many_articles_need_to_check},
+        {'text': 'Вывести список непроверенных слов (answer_from_sites = null)',
+         'function': print_list_of_words, 'params': 'null'},
+        {'text': 'Вывести список непроверенных слов c ошибкой 404  (answer_from_sites = 404)',
+         'function': print_list_of_words, 'params': '404'},
+        {'text': 'Проверить подозрительные слова на сайтах', 'function': check_words_on_sites}
+    ]
+
+    while True:
+        print('')
+        for index, item in enumerate(menu):
+            print('{} - {}'.format(index + 1, item['text']))
+        command = int(input('Введите номер команды (любой другой номер завершит программу): '))
+        if command > len(menu) or command < 0:
+            break
+        if 'params' not in menu[command - 1]:
+            menu[command - 1]['function']()
+        else:
+            menu[command - 1]['function'](menu[command - 1]['params'])
 
 
 def test():
