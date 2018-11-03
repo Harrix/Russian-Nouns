@@ -42,15 +42,15 @@ def function_execution_time(func):
 
 
 @function_execution_time
-def clear_all_temporary_files():
-    def delete_file(filename):
+def remove_all_temporary_files():
+    def remove(filename):
         if Path(dictionary_json_filename).is_file():
             os.remove(dictionary_json_filename)
             print('Файл {} удален'.format(dictionary_json_filename))
         else:
             print('Файл {} не существует'.format(dictionary_json_filename))
 
-    delete_file(dictionary_json_filename)
+    remove(dictionary_json_filename)
     print('Временных файлов больше нет')
 
 
@@ -277,7 +277,7 @@ def read_json():
 @if_exist_dictionary
 def main():
     menu = [
-        {'text': 'Очистить временные файлы', 'function': clear_all_temporary_files},
+        {'text': 'Очистить временные файлы', 'function': remove_all_temporary_files},
         {'text': 'Сгенерировать файл {}'.format(dictionary_json_filename), 'function': generated_json},
         {'text': 'Сколько слов нужно проверить на сайтах', 'function': how_many_articles_need_to_check},
         {'text': 'Вывести список непроверенных слов (answer_from_sites = null)',
