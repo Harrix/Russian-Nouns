@@ -41,14 +41,15 @@ def function_execution_time(func):
     return wrapper
 
 
+@if_exist_dictionary
 def main():
     menu = [
         {'text': 'Очистить временные файлы', 'function': clear_all_temporary_files},
         {'text': 'Сгенерировать файл {}'.format(dictionary_json_filename), 'function': generated_json},
         {'text': 'Сколько слов нужно проверить на сайтах', 'function': how_many_articles_need_to_check},
-        {'text': 'Вывести список непроверенных слов (answer_from_wiktionary = null)',
+        {'text': 'Вывести список непроверенных слов (answer_from_sites = null)',
          'function': print_list_of_words, 'params': 'null'},
-        {'text': 'Вывести список непроверенных слов c ошибкой 404  (answer_from_wiktionary = 404)',
+        {'text': 'Вывести список непроверенных слов c ошибкой 404  (answer_from_sites = 404)',
          'function': print_list_of_words, 'params': '404'},
         {'text': 'Проверить подозрительные слова на сайтах', 'function': check_words_on_sites}
     ]
@@ -116,7 +117,7 @@ def generated_json():
         entry['definition'] = definition
         entry['is_noun_by_dictionary'] = is_noun_by_dictionary
         entry['is_possible_not_noun'] = is_possible_not_noun
-        entry['answer_from_wiktionary'] = 'null'
+        entry['answer_from_sites'] = 'null'
         dictionary[word] = entry
 
     save_json(dictionary)
@@ -137,7 +138,7 @@ def how_many_articles_need_to_check():
         if (
                 entry['is_noun_by_dictionary'] and
                 entry['is_possible_not_noun'] and
-                entry['answer_from_wiktionary'] == 'null'
+                entry['answer_from_sites'] == 'null'
         ):
             count_check += 1
 
@@ -148,7 +149,7 @@ def how_many_articles_need_to_check():
 
 @function_execution_time
 @if_exist_json
-def print_list_of_words(answer_from_wiktionary):
+def print_list_of_words(answer_from_sites):
     dictionary = read_json()
 
     count = 0
@@ -156,15 +157,15 @@ def print_list_of_words(answer_from_wiktionary):
         if entry['is_noun_by_dictionary'] and entry['is_possible_not_noun']:
             is_print = False
 
-            if answer_from_wiktionary == 'null' and entry['answer_from_wiktionary'] == 'null':
+            if answer_from_sites == 'null' and entry['answer_from_sites'] == 'null':
                 is_print = True
 
-            if answer_from_wiktionary == '404' and entry['answer_from_wiktionary'] == 404:
+            if answer_from_sites == '404' and entry['answer_from_sites'] == 404:
                 is_print = True
 
             if is_print:
                 print(word)
-                print('answer_from_wiktionary = {}'.format(entry['answer_from_wiktionary']))
+                print('answer_from_sites = {}'.format(entry['answer_from_sites']))
                 print('-------------------------')
                 count += 1
 
@@ -181,7 +182,7 @@ def check_words_on_sites():
         if (
                 entry['is_noun_by_dictionary'] and
                 entry['is_possible_not_noun'] and
-                entry['answer_from_wiktionary'] == 'null'
+                entry['answer_from_sites'] == 'null'
         ):
             try:
                 response = requests.get('https://ru.wiktionary.org/wiki/' + word)
@@ -218,17 +219,17 @@ def check_words_on_sites():
                         is_not_noun_by_wiktionary = True
 
                     if is_noun_by_wiktionary:
-                        dictionary[word]['answer_from_wiktionary'] = 'noun'
-                        print('answer_from_wiktionary = noun')
+                        dictionary[word]['answer_from_sites'] = 'noun'
+                        print('answer_from_sites = noun')
 
                     if is_not_noun_by_wiktionary:
-                        dictionary[word]['answer_from_wiktionary'] = 'not_noun'
-                        print('answer_from_wiktionary = not_noun')
+                        dictionary[word]['answer_from_sites'] = 'not_noun'
+                        print('answer_from_sites = not_noun')
 
                     if not is_noun_by_wiktionary and not is_not_noun_by_wiktionary:
                         print('Need more checks')
                 else:
-                    dictionary[word]['answer_from_wiktionary'] = response.status_code
+                    dictionary[word]['answer_from_sites'] = response.status_code
                     print('url = {}'.format(response.url))
                 print('-------------------------')
 
@@ -244,7 +245,7 @@ def check_words_on_sites():
         if (
                 entry['is_noun_by_dictionary'] and
                 entry['is_possible_not_noun'] and
-                entry['answer_from_wiktionary'] == 404
+                entry['answer_from_sites'] == 404
         ):
             try:
                 response = requests.get('https://dic.academic.ru/searchall.php?SWord=' + word)
@@ -261,12 +262,12 @@ def check_words_on_sites():
                         is_noun_by_wiktionary = True
 
                     if is_noun_by_wiktionary:
-                        dictionary[word]['answer_from_wiktionary'] = 'noun'
-                        print('answer_from_wiktionary = noun')
+                        dictionary[word]['answer_from_sites'] = 'noun'
+                        print('answer_from_sites = noun')
 
                     # if is_not_noun_by_wiktionary:
-                    #     dictionary[word]['answer_from_wiktionary'] = 'not_noun'
-                    #     print('answer_from_wiktionary = not_noun')
+                    #     dictionary[word]['answer_from_sites'] = 'not_noun'
+                    #     print('answer_from_sites = not_noun')
 
                     if not is_noun_by_wiktionary:
                         print('Need more checks')
