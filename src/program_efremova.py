@@ -37,6 +37,16 @@ def main():
             menu[command]['function'](menu[command]['params'])
 
 
+def function_execution_time(func):
+    def wrapper():
+        start = time.time()
+        func()
+        end = time.time()
+        print('Время выполнения функции: {}'.format(time.strftime('%H:%M:%S', time.gmtime(end - start))))
+    return wrapper
+
+
+@function_execution_time
 def clear_all_temporary_files():
     def delete_file(filename):
         if Path(dictionary_json_filename).is_file():
@@ -44,16 +54,12 @@ def clear_all_temporary_files():
             print('Файл {} удален'.format(dictionary_json_filename))
         else:
             print('Файл {} не существует'.format(dictionary_json_filename))
-
-    start = time.time()
     delete_file(dictionary_json_filename)
     print('Временных файлов больше нет')
-    end = time.time()
-    print_time(start, end)
 
 
+@function_execution_time
 def generated_json():
-    start = time.time()
     if not is_exist_dictionary():
         return
 
@@ -95,12 +101,10 @@ def generated_json():
         dictionary[word] = entry
 
     save_json(dictionary)
-    end = time.time()
-    print_time(start, end)
 
 
+@function_execution_time
 def how_many_articles_need_to_check():
-    start = time.time()
     if not is_exist_json():
         return
     dictionary = read_json()
@@ -122,12 +126,10 @@ def how_many_articles_need_to_check():
     print('Все слова: {}'.format(count_all))
     print('Количество существительных по Ефремовой: {}'.format(count_nouns_by_dictionary))
     print('Нужно проверить на сайтах: {}'.format(count_check))
-    end = time.time()
-    print_time(start, end)
 
 
+@function_execution_time
 def print_list_of_words(answer_from_wiktionary):
-    start = time.time()
     if not is_exist_json():
         return
     dictionary = read_json()
@@ -150,12 +152,9 @@ def print_list_of_words(answer_from_wiktionary):
                 count += 1
 
     print('Слов: {}'.format(count))
-    end = time.time()
-    print_time(start, end)
 
 
 def check_words_on_sites():
-    start = time.time()
     if not is_exist_json():
         return
     dictionary = read_json()
@@ -265,12 +264,6 @@ def check_words_on_sites():
 
     save_json(dictionary)
     print('Проверка подозрительных слов завершена')
-    end = time.time()
-    print_time(start, end)
-
-
-def print_time(start, end):
-    print('Время выполнения функции: {}'.format(time.strftime('%H:%M:%S', time.gmtime(end - start))))
 
 
 def save_json(dictionary):
