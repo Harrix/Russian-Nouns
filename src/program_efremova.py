@@ -240,6 +240,8 @@ def main():
         {'text': 'Статистика', 'function': statistics},
         {'text': 'Список непроверенных подозрительных слов', 'function': print_list_of_words,
          'params': {'key': 'answerIsProbablyNotNoun', 'answer': 'null'}},
+        {'text': 'Список проверенных подозрительных слов с ошибкой 404', 'function': print_list_of_words,
+         'params': {'key': 'answerIsProbablyNotNoun', 'answer': '404'}},
         {'text': 'Список непроверенных слов во мн. числе', 'function': print_list_of_words,
          'params': {'key': 'answerNeedToIncludePlural', 'answer': 'null'}},
         {'text': 'Проверить подозрительные слова на wiktionary.org', 'function': check_words_on_site,
@@ -265,9 +267,9 @@ def main():
 
 
 def test():
-    answer = check_word_in_site('оранжевый', 'https://ru.wiktionary.org/wiki/', check_word_in_wiktionary)
+    answer = check_word_in_site('мост', 'https://dic.academic.ru/searchall.php?SWord=', check_word_in_academic)
     print(answer)
 
 
 if __name__ == '__main__':
-    test()
+    main()
