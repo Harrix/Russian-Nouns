@@ -105,23 +105,33 @@ def generated_json():
 
 @function_execution_time
 @if_exist_json
-def how_many_articles_need_to_check():
+def statistics():
     dictionary = read_json()
-
     count = 0
-    count_plural = 0
-    count_plural_check = 0
     count_check = 0
+    count_need_check = 0
+    count_plural_check = 0
+    count_plural_need_check = 0
     for word, entry in dictionary.items():
         count += 1
-        if entry['is_plural']:
-            count_plural += 1
-        if entry['is_probably_not_noun'] and entry['answer_from_sites'] == 'null':
+        if 'answerIsProbablyNotNoun' in entry:
             count_check += 1
+            if entry['answerIsProbablyNotNoun'] == 'null':
+                count_need_check += 1
+        if 'answerNeedToIncludePlural' in entry:
+            count_plural_check += 1
+            if entry['answerNeedToIncludePlural'] == 'null':
+                count_plural_need_check += 1
 
     print('Всего существительных по Ефремовой: {}'.format(count))
-    print('Возможно это не существительные (нужно проверить): {}'.format(count_check))
-    print('Слова во множественном числе: {}'.format(count_plural))
+    print('Подозрительные (возможно не сущ.):')
+    print('\tвсего: {}'.format(count_check))
+    print('\tнужно проверить: {}'.format(count_need_check))
+    print('\tпроверено: {}'.format(count_check - count_need_check))
+    print('Слова во множественном числе по Ефремовой:')
+    print('\tвсего: {}'.format(count_plural_check))
+    print('\tнужно проверить: {}'.format(count_plural_need_check))
+    print('\tпроверено: {}'.format(count_plural_check - count_plural_need_check))
 
 
 @function_execution_time
@@ -266,7 +276,7 @@ def main():
     menu = [
         {'text': 'Очистить временные файлы', 'function': remove_all_temporary_files},
         {'text': 'Сгенерировать файл {}'.format(json_filename), 'function': generated_json},
-        {'text': 'Сколько слов нужно проверить на сайтах', 'function': how_many_articles_need_to_check},
+        {'text': 'Статистика', 'function': statistics},
         {'text': 'Вывести список непроверенных слов (answer_from_sites = null)',
          'function': print_list_of_words, 'params': 'null'},
         {'text': 'Вывести список непроверенных слов c ошибкой 404  (answer_from_sites = 404)',
