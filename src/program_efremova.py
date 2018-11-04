@@ -6,7 +6,7 @@ import time
 import os
 
 dictionary_filename = 'efremova.txt'
-dictionary_json_filename = 'data.json'
+json_filename = 'data.json'
 
 
 def if_exist_dictionary(func):
@@ -22,9 +22,9 @@ def if_exist_dictionary(func):
 
 def if_exist_json(func):
     def wrapper():
-        file = Path(dictionary_json_filename)
+        file = Path(json_filename)
         if not file.is_file():
-            print('Файл {} не существует. Его нужно сгенерировать первоначально'.format(dictionary_json_filename))
+            print('Файл {} не существует. Его нужно сгенерировать первоначально'.format(json_filename))
             return
         func()
 
@@ -42,31 +42,31 @@ def function_execution_time(func):
 
 
 def save_json(dictionary):
-    file = Path(dictionary_json_filename)
+    file = Path(json_filename)
     action = 'обновлен' if file.is_file() else 'создан'
-    with open(dictionary_json_filename, 'w', encoding='utf8') as outfile:
+    with open(json_filename, 'w', encoding='utf8') as outfile:
         json.dump(dictionary, outfile, ensure_ascii=False, indent=4)
-    print('Файл {} {}'.format(dictionary_json_filename, action))
+    print('Файл {} {}'.format(json_filename, action))
 
 
 def read_json():
-    file = Path(dictionary_json_filename)
+    file = Path(json_filename)
     with open(file, encoding='utf8') as f:
         dictionary = json.loads(f.read())
-    print('Файл {} открыт'.format(dictionary_json_filename))
+    print('Файл {} открыт'.format(json_filename))
     return dictionary
 
 
 @function_execution_time
 def remove_all_temporary_files():
     def remove(filename):
-        if Path(dictionary_json_filename).is_file():
-            os.remove(dictionary_json_filename)
-            print('Файл {} удален'.format(dictionary_json_filename))
+        if Path(json_filename).is_file():
+            os.remove(json_filename)
+            print('Файл {} удален'.format(json_filename))
         else:
-            print('Файл {} не существует'.format(dictionary_json_filename))
+            print('Файл {} не существует'.format(json_filename))
 
-    remove(dictionary_json_filename)
+    remove(json_filename)
     print('Временных файлов больше нет')
 
 
@@ -262,7 +262,7 @@ def check_words_on_sites():
 def main():
     menu = [
         {'text': 'Очистить временные файлы', 'function': remove_all_temporary_files},
-        {'text': 'Сгенерировать файл {}'.format(dictionary_json_filename), 'function': generated_json},
+        {'text': 'Сгенерировать файл {}'.format(json_filename), 'function': generated_json},
         {'text': 'Сколько слов нужно проверить на сайтах', 'function': how_many_articles_need_to_check},
         {'text': 'Вывести список непроверенных слов (answer_from_sites = null)',
          'function': print_list_of_words, 'params': 'null'},
