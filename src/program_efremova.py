@@ -82,8 +82,10 @@ def generated_json():
         word = split_line[0]
         definition = split_line[1]
 
-        is_noun = (bool(re.match(r'(ж|м|ср|мн)\.(.*)$', definition)) or
-                   bool(re.match(r'(1\.|I) (ж|м|ср|мн)\.(.*)$', definition)))
+        if bool(re.match(r'(ж|м|ср|мн)\.(.*)$', definition)):
+            continue
+        if bool(re.match(r'(1\.|I) (ж|м|ср|мн)\.(.*)$', definition)):
+            continue
 
         is_possible_not_noun = False
         endings = ['ая', 'ее', 'ие', 'ий', 'ое', 'ой', 'ые', 'ый', 'ье', 'ьи', 'ья', 'яя']
@@ -91,10 +93,8 @@ def generated_json():
             is_possible_not_noun = is_possible_not_noun or word.endswith(ending)
 
         dictionary[word] = {'definition': definition,
-                            'is_noun_by_dictionary': is_noun,
                             'is_possible_not_noun': is_possible_not_noun,
                             'answer_from_sites': 'null'}
-        print(is_noun)
 
     save_json(dictionary)
 
