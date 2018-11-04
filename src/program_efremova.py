@@ -90,9 +90,10 @@ def generated_json():
         for ending in endings:
             is_probably_not_noun = is_probably_not_noun or word.endswith(ending)
 
-        dictionary[word] = {'definition': definition,
-                            'is_probably_not_noun': is_probably_not_noun,
-                            'answer_from_sites': 'null'}
+        dictionary[word] = {'definition': definition}
+        if is_probably_not_noun:
+            dictionary[word]['is_probably_not_noun'] = True
+            dictionary[word]['answer_from_sites'] = 'null'
 
     save_json(dictionary)
 
@@ -107,10 +108,7 @@ def how_many_articles_need_to_check():
     count_check = 0
     for word, entry in dictionary.items():
         count_all += 1
-        if entry['is_noun_by_dictionary']:
-            count_nouns_by_dictionary += 1
         if (
-                entry['is_noun_by_dictionary'] and
                 entry['is_probably_not_noun'] and
                 entry['answer_from_sites'] == 'null'
         ):
