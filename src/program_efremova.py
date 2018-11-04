@@ -10,31 +10,31 @@ json_filename = 'data.json'
 
 
 def if_exist_dictionary(func):
-    def wrapper():
+    def wrapper(*original_args, **original_kwargs):
         file = Path(dictionary_filename)
         if not file.is_file():
             print('Файл {} не существует. Программа не может быть выполнена'.format(dictionary_filename))
             return
-        func()
+        func(*original_args, **original_kwargs)
 
     return wrapper
 
 
 def if_exist_json(func):
-    def wrapper():
+    def wrapper(*original_args, **original_kwargs):
         file = Path(json_filename)
         if not file.is_file():
             print('Файл {} не существует. Его нужно сгенерировать первоначально'.format(json_filename))
             return
-        func()
+        func(*original_args, **original_kwargs)
 
     return wrapper
 
 
 def function_execution_time(func):
-    def wrapper():
+    def wrapper(*original_args, **original_kwargs):
         start = time.time()
-        func()
+        func(*original_args, **original_kwargs)
         end = time.time()
         print('Время выполнения функции: {}\n'.format(time.strftime('%H:%M:%S', time.gmtime(end - start))))
 
@@ -112,6 +112,7 @@ def statistics():
     count_need_check = 0
     count_plural_check = 0
     count_plural_need_check = 0
+
     for word, entry in dictionary.items():
         count += 1
         if 'answerIsProbablyNotNoun' in entry:
@@ -136,24 +137,18 @@ def statistics():
 
 @function_execution_time
 @if_exist_json
-def print_list_of_words(answer_from_sites):
-    dictionary = read_json()
+def print_list_of_words(key, answer):
+    def print_word():
+        print(word)
+        print('{} = {}'.format(key, entry[key]))
+        print('-------------------------')
 
+    dictionary = read_json()
     count = 0
     for word, entry in dictionary.items():
-        if entry['is_noun_by_dictionary'] and entry['is_probably_not_noun']:
-            is_print = False
-
-            if answer_from_sites == 'null' and entry['answer_from_sites'] == 'null':
-                is_print = True
-
-            if answer_from_sites == '404' and entry['answer_from_sites'] == 404:
-                is_print = True
-
-            if is_print:
-                print(word)
-                print('answer_from_sites = {}'.format(entry['answer_from_sites']))
-                print('-------------------------')
+        if key == 'answerIsProbablyNotNoun' and key in entry:
+            if answer == 'null' and entry[key] == answer:
+                print_word()
                 count += 1
 
     print('Слов: {}'.format(count))
@@ -277,28 +272,30 @@ def main():
         {'text': 'Очистить временные файлы', 'function': remove_all_temporary_files},
         {'text': 'Сгенерировать файл {}'.format(json_filename), 'function': generated_json},
         {'text': 'Статистика', 'function': statistics},
-        {'text': 'Вывести список непроверенных слов (answer_from_sites = null)',
-         'function': print_list_of_words, 'params': 'null'},
-        {'text': 'Вывести список непроверенных слов c ошибкой 404  (answer_from_sites = 404)',
-         'function': print_list_of_words, 'params': '404'},
+        {'text': 'Список непроверенных подозрительных слов', 'function': print_list_of_words,
+         'params': {'key': 'answerIsProbablyNotNoun', 'answer': 'null'}},
         {'text': 'Проверить подозрительные слова на сайтах', 'function': check_words_on_sites}
     ]
 
     while True:
         for index, item in enumerate(menu):
             print('{} - {}'.format(index + 1, item['text']))
-        command = int(input('Введите номер команды (любой другой номер завершит программу): '))
+        try:
+            command = int(input('Введите номер команды (нажмите Enter для выхода): '))
+        except ValueError:
+            break
         if command > len(menu) or command < 0:
             break
         if 'params' not in menu[command - 1]:
             menu[command - 1]['function']()
         else:
-            menu[command - 1]['function'](menu[command - 1]['params'])
+            menu[command - 1]['function'](**menu[command - 1]['params'])
         input("Нажмите Enter для продолжения...")
 
 
 def test():
-    pass
+    params = {'what': 'answerIsProbablyNotNoun', 'answer': 'null'}
+    print_list_of_words(**params)
 
 
 if __name__ == '__main__':
