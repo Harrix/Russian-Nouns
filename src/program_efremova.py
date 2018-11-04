@@ -41,6 +41,22 @@ def function_execution_time(func):
     return wrapper
 
 
+def save_json(dictionary):
+    file = Path(dictionary_json_filename)
+    action = 'обновлен' if file.is_file() else 'создан'
+    with open(dictionary_json_filename, 'w', encoding='utf8') as outfile:
+        json.dump(dictionary, outfile, ensure_ascii=False, indent=4)
+    print('Файл {} {}'.format(dictionary_json_filename, action))
+
+
+def read_json():
+    file = Path(dictionary_json_filename)
+    with open(file, encoding='utf8') as f:
+        dictionary = json.loads(f.read())
+    print('Файл ' + dictionary_json_filename + ' открыт')
+    return dictionary
+
+
 @function_execution_time
 def remove_all_temporary_files():
     def remove(filename):
@@ -256,22 +272,6 @@ def check_words_on_sites():
 
     save_json(dictionary)
     print('Проверка подозрительных слов завершена')
-
-
-def save_json(dictionary):
-    file = Path(dictionary_json_filename)
-    action = 'обновлен' if file.is_file() else 'создан'
-    with open(dictionary_json_filename, 'w', encoding='utf8') as outfile:
-        json.dump(dictionary, outfile, ensure_ascii=False, indent=4)
-    print('Файл {} {}'.format(dictionary_json_filename, action))
-
-
-def read_json():
-    file = Path(dictionary_json_filename)
-    with open(file, encoding='utf8') as f:
-        dictionary = json.loads(f.read())
-    print('Файл ' + dictionary_json_filename + ' открыт')
-    return dictionary
 
 
 @if_exist_dictionary
