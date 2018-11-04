@@ -97,6 +97,9 @@ def statistics():
     count = 0
     count_check = 0
     count_need_check = 0
+    count_need_check_404 = 0
+    count_need_check_noun = 0
+    count_need_check_not_noun = 0
     count_plural_check = 0
     count_plural_need_check = 0
 
@@ -106,6 +109,12 @@ def statistics():
             count_check += 1
             if entry['answerIsProbablyNotNoun'] == 'null':
                 count_need_check += 1
+            if entry['answerIsProbablyNotNoun'] == '404':
+                count_need_check_404 += 1
+            if entry['answerIsProbablyNotNoun'] == 'noun':
+                count_need_check_noun += 1
+            if entry['answerIsProbablyNotNoun'] == 'not noun':
+                count_need_check_not_noun += 1
         if 'answerNeedToIncludePlural' in entry:
             count_plural_check += 1
             if entry['answerNeedToIncludePlural'] == 'null':
@@ -114,8 +123,11 @@ def statistics():
     print('Всего существительных по Ефремовой: {}'.format(count))
     print('Подозрительные (возможно не сущ.):')
     print('\tвсего: {}'.format(count_check))
-    print('\tнужно проверить: {}'.format(count_need_check))
+    print('\tне проверенные на сайтах: {}'.format(count_need_check))
     print('\tпроверено: {}'.format(count_check - count_need_check))
+    print('\tиз них с ошибкой 404: {}'.format(count_need_check_404))
+    print('\tопределено как сущ.: {}'.format(count_need_check_noun))
+    print('\tопределено как не сущ.: {}'.format(count_need_check_not_noun))
     print('Слова во множественном числе по Ефремовой:')
     print('\tвсего: {}'.format(count_plural_check))
     print('\tнужно проверить: {}'.format(count_plural_need_check))
