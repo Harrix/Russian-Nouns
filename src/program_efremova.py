@@ -223,11 +223,15 @@ def check_word_in_site(word, url, func_check_in_html):
 @if_exist_json
 def check_words_on_site(url, func_check_in_html):
     dictionary = read_json()
+    i = 0
     for word, entry in dictionary.items():
         if 'answerIsProbablyNotNoun' in entry and entry['answerIsProbablyNotNoun'] == 'null':
             answer = check_word_in_site(word, url, func_check_in_html)
             if answer is not None:
                 dictionary[word]['answerIsProbablyNotNoun'] = answer
+                i += 1
+                if i % 100 == 0:
+                    save_json(dictionary)
     save_json(dictionary)
     print('Проверка слов на {} завершена'.format(url))
 
@@ -247,7 +251,8 @@ def main():
         {'text': 'Проверить подозрительные слова на wiktionary.org', 'function': check_words_on_site,
          'params': {'url': 'https://ru.wiktionary.org/wiki/', 'func_check_in_html': check_word_in_wiktionary}},
         {'text': 'Проверить подозрительные слова на dic.academic.ru', 'function': check_words_on_site,
-         'params': {'url': 'https://dic.academic.ru/searchall.php?SWord=', 'func_check_in_html': check_word_in_academic}}
+         'params': {'url': 'https://dic.academic.ru/searchall.php?SWord=',
+                    'func_check_in_html': check_word_in_academic}}
     ]
 
     while True:
