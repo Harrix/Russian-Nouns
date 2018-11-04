@@ -89,10 +89,7 @@ def generated_json():
         if bool(re.match(r'(мн)\.(.*)$', definition) or re.match(r'(1\.|I) (мн)\.(.*)$', definition)):
             is_plural = True
 
-        is_probably_not_noun = False
-        endings = ['ая', 'ее', 'ие', 'ий', 'ое', 'ой', 'ые', 'ый', 'ье', 'ьи', 'ья', 'яя']
-        for ending in endings:
-            is_probably_not_noun = is_probably_not_noun or word.endswith(ending)
+        is_probably_not_noun = word[-2:] in ['ая', 'ее', 'ие', 'ий', 'ое', 'ой', 'ые', 'ый', 'ье', 'ьи', 'ья', 'яя']
 
         dictionary[word] = {'definition': definition}
         if is_probably_not_noun:
