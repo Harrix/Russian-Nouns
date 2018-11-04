@@ -208,7 +208,7 @@ def check_word_in_site(word, url, function_check_html):
             if answer_from_html is not None:
                 answer = answer_from_html
         else:
-            answer = response.status_code
+            answer = str(response.status_code)
     except ConnectionError:
         print("Ошибка: ConnectionError")
         time.sleep(1)
