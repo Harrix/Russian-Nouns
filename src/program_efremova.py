@@ -162,9 +162,6 @@ def print_list_of_words(key, answer):
 def check_word_in_wiktionary(word, html):
     answer = None
 
-    if '<title>{} — Викисловарь</title>'.format(word) not in html:
-        return '404';
-
     if 'title="существительное">Существительное</a>' in html:
         answer = 'noun'
     if 'Существительное.' in html:
@@ -241,7 +238,7 @@ def check_word_in_goldlit(word, html):
 def check_word_in_site(word, url, function_check_html):
     answer = None
     try:
-        response = requests.get(url + word, allow_redirects=False)
+        response = requests.get(url + word)
         if response.status_code == 200:
             answer_from_html = function_check_html(word, response.text)
             if answer_from_html is not None:
