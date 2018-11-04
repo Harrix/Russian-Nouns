@@ -154,6 +154,61 @@ def print_list_of_words(key, answer):
     print('Слов: {}'.format(count))
 
 
+def check_word_in_wiktionary(word):
+    answer = 'null'
+    try:
+        response = requests.get('https://ru.wiktionary.org/wiki/' + word)
+        if response.status_code == 200:
+            html = response.text
+            if 'title="существительное">Существительное</a>' in html:
+                answer = 'noun'
+            if 'Существительное.' in html:
+                answer = 'noun'
+            if 'title="выступает в роли существительного">субстантивир.</span>' in html:
+                answer = 'noun'
+            if 'Существительное' in html and 'Прилагательное' not in html:
+                answer = 'noun'
+            if 'Существительное, одушевлённое,  тип склонения по ' in html:
+                answer = 'noun'
+
+            if 'title="прилагательное">Прилагательное</a>' in html:
+                answer = 'not noun'
+            if 'title="причастие">Причастие</a>' in html:
+                answer = 'not noun'
+            if 'title="причастие">причастие</a>' in html:
+                answer = 'not noun'
+            if 'title="наречие">Наречие</a>' in html:
+                answer = 'not noun'
+            if 'title="деепричастие">деепричастие</a>' in html:
+                answer = 'not noun'
+            if 'Существительное' not in html and 'Прилагательное' in html:
+                answer = 'not noun'
+            if 'Существительное' not in html and 'прилагательного' in html:
+                answer = 'not noun'
+            if 'Существительное' not in html and 'Местоименное прилагательное' in html:
+                answer = 'not noun'
+            if 'Существительное' not in html and 'Притяжательное местоимение' in html:
+                answer = 'not noun'
+            if 'Существительное' not in html and 'Притяжательное прилагательное' in html:
+                answer = 'not noun'
+            if 'Существительное' not in html and 'Числительное' in html:
+                answer = 'not noun'
+            if 'Существительное' not in html and 'Порядковое числительное' in html:
+                answer = 'not noun'
+            if 'Существительное' not in html and 'Местоимение' in html:
+                answer = 'not noun'
+            if 'Существительное' not in html and 'Указательное местоимение' in html:
+                answer = 'not noun'
+        else:
+            answer = response.status_code
+    except ConnectionError:
+        print("Ошибка: ConnectionError")
+        time.sleep(1)
+    print('answer = {}'.format(answer))
+    print('-------------------------')
+    return answer
+
+
 @function_execution_time
 @if_exist_json
 def check_words_on_sites():
