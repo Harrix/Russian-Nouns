@@ -85,6 +85,10 @@ def generated_json():
         if not bool(re.match(r'(ж|м|ср|мн)\.(.*)$', definition) or re.match(r'(1\.|I) (ж|м|ср|мн)\.(.*)$', definition)):
             continue
 
+        is_plural = False
+        if bool(re.match(r'(мн)\.(.*)$', definition) or re.match(r'(1\.|I) (мн)\.(.*)$', definition)):
+            is_plural = True
+
         is_probably_not_noun = False
         endings = ['ая', 'ее', 'ие', 'ий', 'ое', 'ой', 'ые', 'ый', 'ье', 'ьи', 'ья', 'яя']
         for ending in endings:
@@ -92,8 +96,9 @@ def generated_json():
 
         dictionary[word] = {'definition': definition}
         if is_probably_not_noun:
-            dictionary[word]['is_probably_not_noun'] = True
-            dictionary[word]['answer_from_sites'] = 'null'
+            dictionary[word]['answerIsProbablyNotNoun'] = 'null'
+        if is_plural:
+            dictionary[word]['answerNeedToIncludePlural'] = 'null'
 
     save_json(dictionary)
 
@@ -103,20 +108,20 @@ def generated_json():
 def how_many_articles_need_to_check():
     dictionary = read_json()
 
-    count_all = 0
-    count_nouns_by_dictionary = 0
+    count = 0
+    count_plural = 0
+    count_plural_check = 0
     count_check = 0
     for word, entry in dictionary.items():
-        count_all += 1
-        if (
-                entry['is_probably_not_noun'] and
-                entry['answer_from_sites'] == 'null'
-        ):
+        count += 1
+        if entry['is_plural']:
+            count_plural += 1
+        if entry['is_probably_not_noun'] and entry['answer_from_sites'] == 'null':
             count_check += 1
 
-    print('Все слова: {}'.format(count_all))
-    print('Количество существительных по Ефремовой: {}'.format(count_nouns_by_dictionary))
-    print('Нужно проверить на сайтах: {}'.format(count_check))
+    print('Всего существительных по Ефремовой: {}'.format(count))
+    print('Возможно это не существительные (нужно проверить): {}'.format(count_check))
+    print('Слова во множественном числе: {}'.format(count_plural))
 
 
 @function_execution_time
