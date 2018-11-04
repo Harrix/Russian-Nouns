@@ -98,7 +98,7 @@ def generated_json():
 
 
 @function_execution_time
-@if_exist_dictionary
+@if_exist_json
 def how_many_articles_need_to_check():
     dictionary = read_json()
 
@@ -281,6 +281,7 @@ def main():
             menu[command - 1]['function']()
         else:
             menu[command - 1]['function'](menu[command - 1]['params'])
+        input("Нажмите Enter для продолжения...")
 
 
 def test():
