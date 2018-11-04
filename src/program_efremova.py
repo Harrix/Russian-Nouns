@@ -199,6 +199,27 @@ def check_word_in_academic(word, html):
     return answer
 
 
+def check_word_in_goldlit(word, html):
+    answer = None
+
+    if '<title>Морфологический разбор слова: {}</title>'.format(word) not in html:
+        return '404'
+
+    if '<strong>Часть речи</strong>: существительное<br />' in html:
+        answer = 'noun'
+
+    if '<strong>Часть речи</strong>: прилагательное<br />' in html:
+        answer = 'not noun'
+    if '<strong>Часть речи</strong>: местоимение-существительное<br />' in html:
+        answer = 'not noun'
+    if '<strong>Часть речи</strong>: числительное' in html:
+        answer = 'not noun'
+    if '<strong>Часть речи</strong>: наречие' in html:
+        answer = 'not noun'
+
+    return answer
+
+
 def check_word_in_site(word, url, function_check_html):
     answer = None
     try:
@@ -251,7 +272,9 @@ def main():
          'params': {'url': 'https://ru.wiktionary.org/wiki/', 'function_check_html': check_word_in_wiktionary}},
         {'text': 'Проверить подозрительные слова на dic.academic.ru', 'function': check_words_on_site,
          'params': {'url': 'https://dic.academic.ru/searchall.php?SWord=',
-                    'function_check_html': check_word_in_academic}}
+                    'function_check_html': check_word_in_academic}},
+        {'text': 'Проверить подозрительные слова на goldlit.ru', 'function': check_words_on_site,
+         'params': {'url': 'https://goldlit.ru/component/slog?words=', 'function_check_html': check_word_in_goldlit}},
     ]
 
     while True:
