@@ -109,7 +109,7 @@ def statistics():
             count_check += 1
             if entry['answerIsProbablyNotNoun'] == 'null':
                 count_need_check += 1
-            if entry['answerIsProbablyNotNoun'] == '404':
+            if entry['answerIsProbablyNotNoun'] not in ['null', 'noun', 'not noun']:
                 count_need_check_404 += 1
             if entry['answerIsProbablyNotNoun'] == 'noun':
                 count_need_check_noun += 1
@@ -125,7 +125,7 @@ def statistics():
     print('\tвсего: {}'.format(count_check))
     print('\tне проверенные на сайтах: {}'.format(count_need_check))
     print('\tпроверено: {}'.format(count_check - count_need_check))
-    print('\tиз них с ошибкой 404: {}'.format(count_need_check_404))
+    print('\tиз них с ошибкой 404 и др.: {}'.format(count_need_check_404))
     print('\tопределено как сущ.: {}'.format(count_need_check_noun))
     print('\tопределено как не сущ.: {}'.format(count_need_check_not_noun))
     print('Слова во множественном числе по Ефремовой:')
@@ -146,6 +146,12 @@ def print_list_of_words(key, answer):
     count = 0
     for word, entry in dictionary.items():
         if key in entry:
+            if answer == 'error' and key == 'answerIsProbablyNotNoun':
+                if entry[key] not in ['null', 'noun', 'not noun']:
+                    print_word()
+                    count += 1
+                    continue
+
             if entry[key] == answer:
                 print_word()
                 count += 1
@@ -257,7 +263,7 @@ def check_words_on_site(url, function_check_html):
     dictionary = read_json()
     i = 0
     for word, entry in dictionary.items():
-        if 'answerIsProbablyNotNoun' in entry and entry['answerIsProbablyNotNoun'] in ['null', '404']:
+        if 'answerIsProbablyNotNoun' in entry and entry['answerIsProbablyNotNoun'] not in ['noun ', 'not noun']:
             answer = check_word_in_site(word, url, function_check_html)
             if answer is not None:
                 dictionary[word]['answerIsProbablyNotNoun'] = answer
@@ -276,8 +282,8 @@ def main():
         {'text': 'Статистика', 'function': statistics},
         {'text': 'Список непроверенных подозрительных слов', 'function': print_list_of_words,
          'params': {'key': 'answerIsProbablyNotNoun', 'answer': 'null'}},
-        {'text': 'Список проверенных подозрительных слов с ошибкой 404', 'function': print_list_of_words,
-         'params': {'key': 'answerIsProbablyNotNoun', 'answer': '404'}},
+        {'text': 'Список проверенных подозрительных слов с ошибкой 404 и др.', 'function': print_list_of_words,
+         'params': {'key': 'answerIsProbablyNotNoun', 'answer': 'error'}},
         {'text': 'Список непроверенных слов во мн. числе', 'function': print_list_of_words,
          'params': {'key': 'answerNeedToIncludePlural', 'answer': 'null'}},
         {'text': 'Проверить подозрительные слова на wiktionary.org', 'function': check_words_on_site,
