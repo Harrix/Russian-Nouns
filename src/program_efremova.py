@@ -192,10 +192,9 @@ def check_word_in_wiktionary(word, html):
 
 def check_word_in_academic(word, html):
     answer = None
-    if re.search(
-            re.escape(
-                word) + r'</a><\/strong> — сущ\.(.*?)<\/p>\n<p class="src"><a href="\/\/dic\.academic\.ru\/contents.nsf\/dic_synonims\/">Словарь синонимов<\/a><\/p>',
-            html, re.S):
+    regexp = r'</a><\/strong> — сущ\.(.*?)<\/p>\n<p class="src">' \
+             r'<a href="\/\/dic\.academic\.ru\/contents.nsf\/dic_synonims\/">Словарь синонимов<\/a><\/p>'
+    if re.search(re.escape(word) + regexp, html, re.S):
         answer = 'noun'
     return answer
 
