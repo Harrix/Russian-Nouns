@@ -76,39 +76,25 @@ def generated_json():
     file = Path(dictionary_filename)
     with open(file, encoding='utf8') as f:
         lines = f.read().splitlines()
-    dictionary = dict()
+    dictionary = {}
     for line in lines:
         split_line = line.split(' ', 1)
         word = split_line[0]
         definition = split_line[1]
 
-        is_noun_by_dictionary = False
-        if re.match(r'(ж|м|ср|мн)\.(.*)$', definition) or re.match(r'(1\.|I) (ж|м|ср|мн)\.(.*)$', definition):
-            is_noun_by_dictionary = True
+        is_noun = (bool(re.match(r'(ж|м|ср|мн)\.(.*)$', definition)) or
+                   bool(re.match(r'(1\.|I) (ж|м|ср|мн)\.(.*)$', definition)))
 
         is_possible_not_noun = False
-        if (
-                word.endswith('ая') or
-                word.endswith('ее') or
-                word.endswith('ие') or
-                word.endswith('ий') or
-                word.endswith('ое') or
-                word.endswith('ой') or
-                word.endswith('ые') or
-                word.endswith('ый') or
-                word.endswith('ье') or
-                word.endswith('ьи') or
-                word.endswith('ья') or
-                word.endswith('яя')
-        ):
-            is_possible_not_noun = True
+        endings = ['ая', 'ее', 'ие', 'ий', 'ое', 'ой', 'ые', 'ый', 'ье', 'ьи', 'ья', 'яя']
+        for ending in endings:
+            is_possible_not_noun = is_possible_not_noun or word.endswith(ending)
 
-        entry = dict()
-        entry['definition'] = definition
-        entry['is_noun_by_dictionary'] = is_noun_by_dictionary
-        entry['is_possible_not_noun'] = is_possible_not_noun
-        entry['answer_from_sites'] = 'null'
-        dictionary[word] = entry
+        dictionary[word] = {'definition': definition,
+                            'is_noun_by_dictionary': is_noun,
+                            'is_possible_not_noun': is_possible_not_noun,
+                            'answer_from_sites': 'null'}
+        print(is_noun)
 
     save_json(dictionary)
 
@@ -301,7 +287,6 @@ def main():
 
 
 def test():
-    # print(urllib.parse.quote_plus('безносая', safe=''))
     pass
 
 
