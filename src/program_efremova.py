@@ -78,25 +78,15 @@ def generated_json():
         lines = f.read().splitlines()
     dictionary = {}
     for line in lines:
-        split_line = line.split(' ', 1)
-        word = split_line[0]
-        definition = split_line[1]
-
+        word = line.split(' ', 1)[0]
+        definition = line.split(' ', 1)[1]
         if not bool(re.match(r'(ж|м|ср|мн)\.(.*)$', definition) or re.match(r'(1\.|I) (ж|м|ср|мн)\.(.*)$', definition)):
             continue
-
-        is_plural = False
-        if bool(re.match(r'(мн)\.(.*)$', definition) or re.match(r'(1\.|I) (мн)\.(.*)$', definition)):
-            is_plural = True
-
-        is_probably_not_noun = word[-2:] in ['ая', 'ее', 'ие', 'ий', 'ое', 'ой', 'ые', 'ый', 'ье', 'ьи', 'ья', 'яя']
-
         dictionary[word] = {'definition': definition}
-        if is_probably_not_noun:
+        if word[-2:] in ['ая', 'ее', 'ие', 'ий', 'ое', 'ой', 'ые', 'ый', 'ье', 'ьи', 'ья', 'яя']:
             dictionary[word]['answerIsProbablyNotNoun'] = 'null'
-        if is_plural:
+        if bool(re.match(r'(мн)\.(.*)$', definition) or re.match(r'(1\.|I) (мн)\.(.*)$', definition)):
             dictionary[word]['answerNeedToIncludePlural'] = 'null'
-
     save_json(dictionary)
 
 
