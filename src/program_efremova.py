@@ -210,6 +210,28 @@ def check_word_in_wiktionary(word):
     return answer
 
 
+def check_word_in_academic(word):
+    answer = 'null'
+    try:
+        response = requests.get('https://dic.academic.ru/searchall.php?SWord=' + word)
+        if response.status_code == 200:
+            html = response.text
+
+            if re.search(
+                    re.escape(
+                        word) + r'</a><\/strong> — сущ\.(.*?)<\/p>\n<p class="src"><a href="\/\/dic\.academic\.ru\/contents.nsf\/dic_synonims\/">Словарь синонимов<\/a><\/p>',
+                    html, re.S):
+                answer = 'noun'
+        else:
+            answer = response.status_code
+    except ConnectionError:
+        print("Ошибка: ConnectionError")
+        time.sleep(1)
+    print('answer = {}'.format(answer))
+    print('-------------------------')
+    return answer
+
+
 @function_execution_time
 @if_exist_json
 def check_words_on_sites():
@@ -217,106 +239,23 @@ def check_words_on_sites():
 
     i = 0
     for word, entry in dictionary.items():
-        if (
-                entry['is_noun_by_dictionary'] and
-                entry['is_probably_not_noun'] and
-                entry['answer_from_sites'] == 'null'
-        ):
-            try:
-                response = requests.get('https://ru.wiktionary.org/wiki/' + word)
-                print('{} status_code = {}'.format(word, response.status_code))
-                if response.status_code == 200:
-                    html = response.text
-                    is_noun_by_wiktionary = False
-                    is_not_noun_by_wiktionary = False
-                    if (
-                            'title="существительное">Существительное</a>' in html or
-                            'Существительное.' in html or
-                            'title="выступает в роли существительного">субстантивир.</span>' in html or
-                            ('Существительное' in html and 'Прилагательное' not in html) or
-                            'Существительное, одушевлённое,  тип склонения по ' in html
-                    ):
-                        is_noun_by_wiktionary = True
-
-                    if (
-                            'title="прилагательное">Прилагательное</a>' in html or
-                            'title="причастие">Причастие</a>' in html or
-                            'title="причастие">причастие</a>' in html or
-                            'title="наречие">Наречие</a>' in html or
-                            'title="деепричастие">деепричастие</a>' in html or
-                            ('Существительное' not in html and 'Прилагательное' in html) or
-                            ('Существительное' not in html and 'прилагательного' in html) or
-                            ('Существительное' not in html and 'Местоименное прилагательное' in html) or
-                            ('Существительное' not in html and 'Притяжательное местоимение' in html) or
-                            ('Существительное' not in html and 'Притяжательное прилагательное' in html) or
-                            ('Существительное' not in html and 'Числительное' in html) or
-                            ('Существительное' not in html and 'Порядковое числительное' in html) or
-                            ('Существительное' not in html and 'Местоимение' in html) or
-                            ('Существительное' not in html and 'Указательное местоимение' in html)
-                    ):
-                        is_not_noun_by_wiktionary = True
-
-                    if is_noun_by_wiktionary:
-                        dictionary[word]['answer_from_sites'] = 'noun'
-                        print('answer_from_sites = noun')
-
-                    if is_not_noun_by_wiktionary:
-                        dictionary[word]['answer_from_sites'] = 'not_noun'
-                        print('answer_from_sites = not_noun')
-
-                    if not is_noun_by_wiktionary and not is_not_noun_by_wiktionary:
-                        print('Need more checks')
-                else:
-                    dictionary[word]['answer_from_sites'] = response.status_code
-                    print('url = {}'.format(response.url))
-                print('-------------------------')
-
-                i += 1
-                if i % 100 == 0:
-                    save_json(dictionary)
-            except ConnectionError:
-                print("Error: ConnectionError")
-                time.sleep(1)
+        if 'answerIsProbablyNotNoun' in entry and entry['answerIsProbablyNotNoun'] == 'null':
+            answer = check_word_in_academic(word)
+            if answer != 'null':
+                dictionary[word]['answerIsProbablyNotNoun'] = answer
+        i += 1
+        if i % 100 == 0:
+            save_json(dictionary)
 
     i = 0
     for word, entry in dictionary.items():
-        if (
-                entry['is_noun_by_dictionary'] and
-                entry['is_probably_not_noun'] and
-                entry['answer_from_sites'] == 404
-        ):
-            try:
-                response = requests.get('https://dic.academic.ru/searchall.php?SWord=' + word)
-                print('{} status_code = {}'.format(word, response.status_code))
-                if response.status_code == 200:
-                    html = response.text
-                    is_noun_by_wiktionary = False
-                    is_not_noun_by_wiktionary = False
-
-                    if re.search(
-                            re.escape(
-                                word) + r'</a><\/strong> — сущ\.(.*?)<\/p>\n<p class="src"><a href="\/\/dic\.academic\.ru\/contents.nsf\/dic_synonims\/">Словарь синонимов<\/a><\/p>',
-                            html, re.S):
-                        is_noun_by_wiktionary = True
-
-                    if is_noun_by_wiktionary:
-                        dictionary[word]['answer_from_sites'] = 'noun'
-                        print('answer_from_sites = noun')
-
-                    # if is_not_noun_by_wiktionary:
-                    #     dictionary[word]['answer_from_sites'] = 'not_noun'
-                    #     print('answer_from_sites = not_noun')
-
-                    if not is_noun_by_wiktionary:
-                        print('Need more checks')
-                print('-------------------------')
-
-                i += 1
-                if i % 100 == 0:
-                    save_json(dictionary)
-            except ConnectionError:
-                print("Ошибка: ConnectionError")
-                time.sleep(1)
+        if 'answerIsProbablyNotNoun' in entry and entry['answerIsProbablyNotNoun'] == 'null':
+            answer = check_word_in_academic(word)
+            if answer != 'null':
+                dictionary[word]['answerIsProbablyNotNoun'] = answer
+        i += 1
+        if i % 100 == 0:
+            save_json(dictionary)
 
     save_json(dictionary)
     print('Проверка подозрительных слов завершена')
