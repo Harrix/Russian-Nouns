@@ -141,75 +141,73 @@ def print_list_of_words(key, answer):
     print('Слов: {}'.format(count))
 
 
-def check_word_in_wiktionary(word):
+def check_word_in_wiktionary(word, html):
     answer = None
-    try:
-        response = requests.get('https://ru.wiktionary.org/wiki/' + word)
-        if response.status_code == 200:
-            html = response.text
 
-            if 'title="существительное">Существительное</a>' in html:
-                answer = 'noun'
-            if 'Существительное.' in html:
-                answer = 'noun'
-            if 'title="выступает в роли существительного">субстантивир.</span>' in html:
-                answer = 'noun'
-            if 'Существительное' in html and 'Прилагательное' not in html:
-                answer = 'noun'
-            if 'Существительное, одушевлённое,  тип склонения по ' in html:
-                answer = 'noun'
+    if '<title>{} — Викисловарь</title>'.format(word) not in html:
+        return '404';
 
-            if 'title="прилагательное">Прилагательное</a>' in html:
-                answer = 'not noun'
-            if 'title="причастие">Причастие</a>' in html:
-                answer = 'not noun'
-            if 'title="причастие">причастие</a>' in html:
-                answer = 'not noun'
-            if 'title="наречие">Наречие</a>' in html:
-                answer = 'not noun'
-            if 'title="деепричастие">деепричастие</a>' in html:
-                answer = 'not noun'
-            if 'Существительное' not in html and 'Прилагательное' in html:
-                answer = 'not noun'
-            if 'Существительное' not in html and 'прилагательного' in html:
-                answer = 'not noun'
-            if 'Существительное' not in html and 'Местоименное прилагательное' in html:
-                answer = 'not noun'
-            if 'Существительное' not in html and 'Притяжательное местоимение' in html:
-                answer = 'not noun'
-            if 'Существительное' not in html and 'Притяжательное прилагательное' in html:
-                answer = 'not noun'
-            if 'Существительное' not in html and 'Числительное' in html:
-                answer = 'not noun'
-            if 'Существительное' not in html and 'Порядковое числительное' in html:
-                answer = 'not noun'
-            if 'Существительное' not in html and 'Местоимение' in html:
-                answer = 'not noun'
-            if 'Существительное' not in html and 'Указательное местоимение' in html:
-                answer = 'not noun'
-        else:
-            answer = response.status_code
-    except ConnectionError:
-        print("Ошибка: ConnectionError")
-        time.sleep(1)
-    print('word = {}'.format(word))
-    print('answer = {}'.format(answer))
-    print('-------------------------')
+    if 'title="существительное">Существительное</a>' in html:
+        answer = 'noun'
+    if 'Существительное.' in html:
+        answer = 'noun'
+    if 'title="выступает в роли существительного">субстантивир.</span>' in html:
+        answer = 'noun'
+    if 'Существительное' in html and 'Прилагательное' not in html:
+        answer = 'noun'
+    if 'Существительное, одушевлённое,  тип склонения по ' in html:
+        answer = 'noun'
+
+    if 'title="прилагательное">Прилагательное</a>' in html:
+        answer = 'not noun'
+    if 'title="причастие">Причастие</a>' in html:
+        answer = 'not noun'
+    if 'title="причастие">причастие</a>' in html:
+        answer = 'not noun'
+    if 'title="наречие">Наречие</a>' in html:
+        answer = 'not noun'
+    if 'title="деепричастие">деепричастие</a>' in html:
+        answer = 'not noun'
+    if 'Существительное' not in html and 'Прилагательное' in html:
+        answer = 'not noun'
+    if 'Существительное' not in html and 'прилагательного' in html:
+        answer = 'not noun'
+    if 'Существительное' not in html and 'Местоименное прилагательное' in html:
+        answer = 'not noun'
+    if 'Существительное' not in html and 'Притяжательное местоимение' in html:
+        answer = 'not noun'
+    if 'Существительное' not in html and 'Притяжательное прилагательное' in html:
+        answer = 'not noun'
+    if 'Существительное' not in html and 'Числительное' in html:
+        answer = 'not noun'
+    if 'Существительное' not in html and 'Порядковое числительное' in html:
+        answer = 'not noun'
+    if 'Существительное' not in html and 'Местоимение' in html:
+        answer = 'not noun'
+    if 'Существительное' not in html and 'Указательное местоимение' in html:
+        answer = 'not noun'
+
     return answer
 
 
-def check_word_in_academic(word):
+def check_word_in_academic(word, html):
+    answer = None
+    if re.search(
+            re.escape(
+                word) + r'</a><\/strong> — сущ\.(.*?)<\/p>\n<p class="src"><a href="\/\/dic\.academic\.ru\/contents.nsf\/dic_synonims\/">Словарь синонимов<\/a><\/p>',
+            html, re.S):
+        answer = 'noun'
+    return answer
+
+
+def check_word_in_site(word, url, func_check_in_html):
     answer = None
     try:
-        response = requests.get('https://dic.academic.ru/searchall.php?SWord=' + word)
+        response = requests.get(url + word, allow_redirects=False)
         if response.status_code == 200:
-            html = response.text
-
-            if re.search(
-                    re.escape(
-                        word) + r'</a><\/strong> — сущ\.(.*?)<\/p>\n<p class="src"><a href="\/\/dic\.academic\.ru\/contents.nsf\/dic_synonims\/">Словарь синонимов<\/a><\/p>',
-                    html, re.S):
-                answer = 'noun'
+            answer_from_html = func_check_in_html(word, response.text)
+            if answer_from_html is not None:
+                answer = answer_from_html
         else:
             answer = response.status_code
     except ConnectionError:
@@ -223,23 +221,15 @@ def check_word_in_academic(word):
 
 @function_execution_time
 @if_exist_json
-def check_words_on_sites():
+def check_words_on_site(url, func_check_in_html):
     dictionary = read_json()
-
     for word, entry in dictionary.items():
         if 'answerIsProbablyNotNoun' in entry and entry['answerIsProbablyNotNoun'] == 'null':
-            answer = check_word_in_academic(word)
+            answer = check_word_in_site(word, url, func_check_in_html)
             if answer is not None:
                 dictionary[word]['answerIsProbablyNotNoun'] = answer
-
-    for word, entry in dictionary.items():
-        if 'answerIsProbablyNotNoun' in entry and entry['answerIsProbablyNotNoun'] == '404':
-            answer = check_word_in_academic(word)
-            if answer is not None:
-                dictionary[word]['answerIsProbablyNotNoun'] = answer
-
     save_json(dictionary)
-    print('Проверка подозрительных слов завершена')
+    print('Проверка слов на {} завершена'.format(url))
 
 
 @if_exist_dictionary
@@ -252,7 +242,10 @@ def main():
          'params': {'key': 'answerIsProbablyNotNoun', 'answer': 'null'}},
         {'text': 'Список непроверенных слов во мн. числе', 'function': print_list_of_words,
          'params': {'key': 'answerNeedToIncludePlural', 'answer': 'null'}},
-        {'text': 'Проверить подозрительные слова на сайтах', 'function': check_words_on_sites}
+        {'text': 'Проверить подозрительные слова на wiktionary.org', 'function': check_words_on_site,
+         'params': {'url': 'https://ru.wiktionary.org/wiki/', 'func_check_in_html': check_word_in_wiktionary}},
+        {'text': 'Проверить подозрительные слова на dic.academic.ru', 'function': check_words_on_site,
+         'params': {'url': 'https://dic.academic.ru/searchall.php?SWord=', 'func_check_in_html': check_word_in_academic}}
     ]
 
     while True:
@@ -272,9 +265,9 @@ def main():
 
 
 def test():
-    params = {'what': 'answerIsProbablyNotNoun', 'answer': 'null'}
-    print_list_of_words(**params)
+    answer = check_word_in_site('оранжевый', 'https://ru.wiktionary.org/wiki/', check_word_in_wiktionary)
+    print(answer)
 
 
 if __name__ == '__main__':
-    main()
+    test()
