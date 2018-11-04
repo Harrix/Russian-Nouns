@@ -155,7 +155,7 @@ def print_list_of_words(key, answer):
 
 
 def check_word_in_wiktionary(word):
-    answer = 'null'
+    answer = None
     try:
         response = requests.get('https://ru.wiktionary.org/wiki/' + word)
         if response.status_code == 200:
@@ -205,13 +205,14 @@ def check_word_in_wiktionary(word):
     except ConnectionError:
         print("Ошибка: ConnectionError")
         time.sleep(1)
+    print('word = {}'.format(word))
     print('answer = {}'.format(answer))
     print('-------------------------')
     return answer
 
 
 def check_word_in_academic(word):
-    answer = 'null'
+    answer = None
     try:
         response = requests.get('https://dic.academic.ru/searchall.php?SWord=' + word)
         if response.status_code == 200:
@@ -227,6 +228,7 @@ def check_word_in_academic(word):
     except ConnectionError:
         print("Ошибка: ConnectionError")
         time.sleep(1)
+    print('word = {}'.format(word))
     print('answer = {}'.format(answer))
     print('-------------------------')
     return answer
@@ -237,25 +239,17 @@ def check_word_in_academic(word):
 def check_words_on_sites():
     dictionary = read_json()
 
-    i = 0
     for word, entry in dictionary.items():
         if 'answerIsProbablyNotNoun' in entry and entry['answerIsProbablyNotNoun'] == 'null':
             answer = check_word_in_academic(word)
-            if answer != 'null':
+            if answer is not None:
                 dictionary[word]['answerIsProbablyNotNoun'] = answer
-        i += 1
-        if i % 100 == 0:
-            save_json(dictionary)
 
-    i = 0
     for word, entry in dictionary.items():
-        if 'answerIsProbablyNotNoun' in entry and entry['answerIsProbablyNotNoun'] == 'null':
+        if 'answerIsProbablyNotNoun' in entry and entry['answerIsProbablyNotNoun'] == '404':
             answer = check_word_in_academic(word)
-            if answer != 'null':
+            if answer is not None:
                 dictionary[word]['answerIsProbablyNotNoun'] = answer
-        i += 1
-        if i % 100 == 0:
-            save_json(dictionary)
 
     save_json(dictionary)
     print('Проверка подозрительных слов завершена')
