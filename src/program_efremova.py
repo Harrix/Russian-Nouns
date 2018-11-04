@@ -146,8 +146,8 @@ def print_list_of_words(key, answer):
     dictionary = read_json()
     count = 0
     for word, entry in dictionary.items():
-        if key == 'answerIsProbablyNotNoun' and key in entry:
-            if answer == 'null' and entry[key] == answer:
+        if key in entry:
+            if entry[key] == answer:
                 print_word()
                 count += 1
 
@@ -274,6 +274,8 @@ def main():
         {'text': 'Статистика', 'function': statistics},
         {'text': 'Список непроверенных подозрительных слов', 'function': print_list_of_words,
          'params': {'key': 'answerIsProbablyNotNoun', 'answer': 'null'}},
+        {'text': 'Список непроверенных слов во мн. числе', 'function': print_list_of_words,
+         'params': {'key': 'answerNeedToIncludePlural', 'answer': 'null'}},
         {'text': 'Проверить подозрительные слова на сайтах', 'function': check_words_on_sites}
     ]
 
