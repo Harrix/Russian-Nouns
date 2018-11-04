@@ -36,7 +36,7 @@ def function_execution_time(func):
         start = time.time()
         func()
         end = time.time()
-        print('Время выполнения функции: {}'.format(time.strftime('%H:%M:%S', time.gmtime(end - start))))
+        print('Время выполнения функции: {}\n'.format(time.strftime('%H:%M:%S', time.gmtime(end - start))))
 
     return wrapper
 
@@ -53,7 +53,7 @@ def read_json():
     file = Path(dictionary_json_filename)
     with open(file, encoding='utf8') as f:
         dictionary = json.loads(f.read())
-    print('Файл ' + dictionary_json_filename + ' открыт')
+    print('Файл {} открыт'.format(dictionary_json_filename))
     return dictionary
 
 
@@ -82,18 +82,16 @@ def generated_json():
         word = split_line[0]
         definition = split_line[1]
 
-        if bool(re.match(r'(ж|м|ср|мн)\.(.*)$', definition)):
-            continue
-        if bool(re.match(r'(1\.|I) (ж|м|ср|мн)\.(.*)$', definition)):
+        if not bool(re.match(r'(ж|м|ср|мн)\.(.*)$', definition) or re.match(r'(1\.|I) (ж|м|ср|мн)\.(.*)$', definition)):
             continue
 
-        is_possible_not_noun = False
+        is_probably_not_noun = False
         endings = ['ая', 'ее', 'ие', 'ий', 'ое', 'ой', 'ые', 'ый', 'ье', 'ьи', 'ья', 'яя']
         for ending in endings:
-            is_possible_not_noun = is_possible_not_noun or word.endswith(ending)
+            is_probably_not_noun = is_probably_not_noun or word.endswith(ending)
 
         dictionary[word] = {'definition': definition,
-                            'is_possible_not_noun': is_possible_not_noun,
+                            'is_probably_not_noun': is_probably_not_noun,
                             'answer_from_sites': 'null'}
 
     save_json(dictionary)
@@ -113,7 +111,7 @@ def how_many_articles_need_to_check():
             count_nouns_by_dictionary += 1
         if (
                 entry['is_noun_by_dictionary'] and
-                entry['is_possible_not_noun'] and
+                entry['is_probably_not_noun'] and
                 entry['answer_from_sites'] == 'null'
         ):
             count_check += 1
@@ -130,7 +128,7 @@ def print_list_of_words(answer_from_sites):
 
     count = 0
     for word, entry in dictionary.items():
-        if entry['is_noun_by_dictionary'] and entry['is_possible_not_noun']:
+        if entry['is_noun_by_dictionary'] and entry['is_probably_not_noun']:
             is_print = False
 
             if answer_from_sites == 'null' and entry['answer_from_sites'] == 'null':
@@ -157,7 +155,7 @@ def check_words_on_sites():
     for word, entry in dictionary.items():
         if (
                 entry['is_noun_by_dictionary'] and
-                entry['is_possible_not_noun'] and
+                entry['is_probably_not_noun'] and
                 entry['answer_from_sites'] == 'null'
         ):
             try:
@@ -220,7 +218,7 @@ def check_words_on_sites():
     for word, entry in dictionary.items():
         if (
                 entry['is_noun_by_dictionary'] and
-                entry['is_possible_not_noun'] and
+                entry['is_probably_not_noun'] and
                 entry['answer_from_sites'] == 404
         ):
             try:
@@ -274,7 +272,6 @@ def main():
     ]
 
     while True:
-        print('')
         for index, item in enumerate(menu):
             print('{} - {}'.format(index + 1, item['text']))
         command = int(input('Введите номер команды (любой другой номер завершит программу): '))
