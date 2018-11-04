@@ -160,6 +160,7 @@ def check_word_in_wiktionary(word):
         response = requests.get('https://ru.wiktionary.org/wiki/' + word)
         if response.status_code == 200:
             html = response.text
+
             if 'title="существительное">Существительное</a>' in html:
                 answer = 'noun'
             if 'Существительное.' in html:
