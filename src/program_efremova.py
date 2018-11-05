@@ -122,6 +122,8 @@ def statistics():
     count_need_check_not_noun = 0
     count_plural_check = 0
     count_plural_need_check = 0
+    count_plural_check_include = 0
+    count_plural_check_exclude = 0
 
     for word, entry in dictionary.items():
         count += 1
@@ -139,6 +141,10 @@ def statistics():
             count_plural_check += 1
             if entry['answerNeedToIncludePlural'] == 'null':
                 count_plural_need_check += 1
+            if entry['answerNeedToIncludePlural'] == 'include':
+                count_plural_check_include += 1
+            if entry['answerNeedToIncludePlural'] == 'exclude':
+                count_plural_check_exclude += 1
 
     print('Всего существительных по Ефремовой: {}'.format(count))
     print('Подозрительные (возможно не сущ.):')
@@ -152,6 +158,8 @@ def statistics():
     print('\tвсего: {}'.format(count_plural_check))
     print('\tнужно проверить: {}'.format(count_plural_need_check))
     print('\tпроверено: {}'.format(count_plural_check - count_plural_need_check))
+    print('\tвключаем: {}'.format(count_plural_check_include))
+    print('\tисключаем: {}'.format(count_plural_check_exclude))
 
 
 @function_execution_time
