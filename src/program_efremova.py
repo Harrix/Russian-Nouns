@@ -6,6 +6,7 @@ import time
 import os
 
 dictionary_filename = 'efremova.txt'
+dictionary_forms_filename = 'odict.csv'
 json_filename = 'data.json'
 
 
@@ -25,6 +26,17 @@ def if_exist_json(func):
         file = Path(json_filename)
         if not file.is_file():
             print('Файл {} не существует. Его нужно сгенерировать первоначально'.format(json_filename))
+            return
+        func(*original_args, **original_kwargs)
+
+    return wrapper
+
+
+def if_exist_dictionary_forms(func):
+    def wrapper(*original_args, **original_kwargs):
+        file = Path(dictionary_forms_filename)
+        if not file.is_file():
+            print('Файл {} не существует. Функция не может быть выполнена'.format(dictionary_filename))
             return
         func(*original_args, **original_kwargs)
 
