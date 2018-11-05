@@ -244,6 +244,8 @@ def check_word_in_goldlit(word, html):
         answer = 'not noun'
     if '<strong>Часть речи</strong>: причастие' in html:
         answer = 'not noun'
+    if '<strong>Часть речи</strong>: порядковое числительное' in html:
+        answer = 'not noun'
 
     if '<strong>Часть речи</strong>: существительное<br />' in html:
         answer = 'noun'
