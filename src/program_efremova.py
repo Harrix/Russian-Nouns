@@ -260,6 +260,10 @@ def check_word_in_morfologija(word, html):
         answer = 'not noun'
     if '<b>Часть речи:</b> деепричастие' in html:
         answer = 'not noun'
+    if '<b>Часть речи:</b> поряд. числительное' in html:
+        answer = 'not noun'
+    if '<b>Часть речи:</b> местоим. прил.' in html:
+        answer = 'not noun'
 
     if '<b>Часть речи:</b> существительное' in html:
         answer = 'noun'
