@@ -273,7 +273,7 @@ def check_word_in_morfologija(word, html):
 
 def check_word_in_site(word, url, function_check_html):
     answer = None
-    response = requests.get(url + word)
+    response = requests.get(url + word.lower())
     if response.status_code == 200:
         answer_from_html = function_check_html(word, response.text)
         if answer_from_html is not None:
@@ -353,7 +353,10 @@ def main():
 
 
 def test():
-    check_word_in_site('мост', 'http://www.morfologija.ru/словоформа/', check_word_in_morfologija)
+    check_word_in_site('минологий', 'http://www.morfologija.ru/словоформа/', check_word_in_morfologija)
+    check_word_in_site('минологий', 'https://goldlit.ru/component/slog?words=', check_word_in_goldlit)
+    check_word_in_site('минологий', 'https://dic.academic.ru/searchall.php?SWord=', check_word_in_academic)
+    check_word_in_site('минологий', 'https://ru.wiktionary.org/wiki/', check_word_in_wiktionary)
 
 
 if __name__ == '__main__':
