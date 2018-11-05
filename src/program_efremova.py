@@ -272,7 +272,7 @@ def check_words_on_site(url, function_check_html):
     dictionary = read_json()
     i = 0
     for word, entry in dictionary.items():
-        if 'answerIsProbablyNotNoun' in entry and entry['answerIsProbablyNotNoun'] not in ['noun ', 'not noun']:
+        if 'answerIsProbablyNotNoun' in entry and entry['answerIsProbablyNotNoun'] not in ['noun', 'not noun']:
             answer = check_word_in_site(word, url, function_check_html)
             if answer is not None:
                 dictionary[word]['answerIsProbablyNotNoun'] = answer
@@ -321,9 +321,8 @@ def main():
 
 
 def test():
-    answer = check_word_in_site('мост', 'https://dic.academic.ru/searchall.php?SWord=', check_word_in_academic)
-    print(answer)
+    pass
 
 
 if __name__ == '__main__':
-    main()
+    test()
