@@ -53,6 +53,14 @@ def function_execution_time(func):
     return wrapper
 
 
+def index_of(string, substring):
+    try:
+        index = string.index(substring)
+    except:
+        index = -1
+    return index
+
+
 def save_json(dictionary):
     file = Path(json_filename)
     action = 'обновлен' if file.is_file() else 'создан'
@@ -331,6 +339,43 @@ def define_words_as_nouns():
     statistics()
 
 
+@function_execution_time
+@if_exist_json
+@if_exist_dictionary_forms
+def check_words_in_plural():
+    file = Path(dictionary_forms_filename)
+    with open(file) as f:
+        dictionary_forms = f.read().splitlines()
+    print('Файл {} открыт'.format(dictionary_forms_filename))
+
+    dictionary = read_json()
+    for word, entry in dictionary.items():
+        if 'answerNeedToIncludePlural' in entry and entry['answerNeedToIncludePlural'] not in ['include', 'exclude']:
+            is_initial_form = False
+            is_as_form = False
+            for line in dictionary_forms:
+                if index_of(line, word + ',') == 0:
+                    is_initial_form = True
+                if index_of(line, ',' + word + ',') >= 0:
+                    is_as_form = True
+                if line.endswith(',' + word):
+                    is_as_form = True
+            answer = None
+            if is_initial_form:
+                answer = 'include'
+            if not is_initial_form and is_as_form:
+                answer = 'exclude'
+            print(word)
+            if answer is not None:
+                print('answer = {}'.format(answer))
+                dictionary[word]['answerNeedToIncludePlural'] = answer
+            print('-------------------------')
+
+    save_json(dictionary)
+    print('Проверка слов во множественном числе завершена')
+    statistics()
+
+
 @if_exist_dictionary
 def main():
     menu = [
@@ -343,6 +388,10 @@ def main():
          'params': {'key': 'answerIsProbablyNotNoun', 'answer': 'error'}},
         {'text': 'Список непроверенных слов во мн. числе', 'function': print_list_of_words,
          'params': {'key': 'answerNeedToIncludePlural', 'answer': 'null'}},
+        {'text': 'Список включаемых проверенных слов во мн. числе', 'function': print_list_of_words,
+         'params': {'key': 'answerNeedToIncludePlural', 'answer': 'include'}},
+        {'text': 'Список невключаемых проверенных слов во мн. числе', 'function': print_list_of_words,
+         'params': {'key': 'answerNeedToIncludePlural', 'answer': 'exclude'}},
         {'text': 'Проверить подозрительные слова на wiktionary.org', 'function': check_words_on_site,
          'params': {'url': 'https://ru.wiktionary.org/wiki/', 'function_check_html': check_word_in_wiktionary}},
         {'text': 'Проверить подозрительные слова на dic.academic.ru', 'function': check_words_on_site,
@@ -353,6 +402,7 @@ def main():
         {'text': 'Проверить подозрительные слова на morfologija.ru', 'function': check_words_on_site,
          'params': {'url': 'http://www.morfologija.ru/словоформа/', 'function_check_html': check_word_in_morfologija}},
         {'text': 'Оставшиеся непроверенные слова определить как существительные', 'function': define_words_as_nouns},
+        {'text': 'Проверить слова во мн. числе', 'function': check_words_in_plural},
     ]
 
     while True:
@@ -372,10 +422,7 @@ def main():
 
 
 def test():
-    check_word_in_site('минологий', 'http://www.morfologija.ru/словоформа/', check_word_in_morfologija)
-    check_word_in_site('минологий', 'https://goldlit.ru/component/slog?words=', check_word_in_goldlit)
-    check_word_in_site('минологий', 'https://dic.academic.ru/searchall.php?SWord=', check_word_in_academic)
-    check_word_in_site('минологий', 'https://ru.wiktionary.org/wiki/', check_word_in_wiktionary)
+    pass
 
 
 if __name__ == '__main__':
