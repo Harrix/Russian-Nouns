@@ -232,9 +232,6 @@ def check_word_in_goldlit(word, html):
     if '<title>Морфологический разбор слова: {}</title>'.format(word) not in html:
         return '404'
 
-    if '<strong>Часть речи</strong>: существительное<br />' in html:
-        answer = 'noun'
-
     if '<strong>Часть речи</strong>: прилагательное<br />' in html:
         answer = 'not noun'
     if '<strong>Часть речи</strong>: местоимение-существительное<br />' in html:
@@ -244,22 +241,42 @@ def check_word_in_goldlit(word, html):
     if '<strong>Часть речи</strong>: наречие' in html:
         answer = 'not noun'
 
+    if '<strong>Часть речи</strong>: существительное<br />' in html:
+        answer = 'noun'
+
+    return answer
+
+
+def check_word_in_morfologija(word, html):
+    answer = None
+
+    if '<b>Часть речи:</b> прилагательное' in html:
+        answer = 'not noun'
+    if '<b>Часть речи:</b> наречие' in html:
+        answer = 'not noun'
+    if '<b>Часть речи:</b> местоимение' in html:
+        answer = 'not noun'
+    if '<b>Часть речи:</b> наречие' in html:
+        answer = 'not noun'
+    if '<b>Часть речи:</b> деепричастие' in html:
+        answer = 'not noun'
+
+    if '<b>Часть речи:</b> существительное' in html:
+        answer = 'noun'
+
     return answer
 
 
 def check_word_in_site(word, url, function_check_html):
     answer = None
-    try:
-        response = requests.get(url + word)
-        if response.status_code == 200:
-            answer_from_html = function_check_html(word, response.text)
-            if answer_from_html is not None:
-                answer = answer_from_html
-        else:
-            answer = str(response.status_code)
-    except ConnectionError:
-        print("Ошибка: ConnectionError")
-        time.sleep(1)
+    response = requests.get(url + word)
+    if response.status_code == 200:
+        answer_from_html = function_check_html(word, response.text)
+        if answer_from_html is not None:
+            answer = answer_from_html
+    else:
+        answer = str(response.status_code)
+
     print('word = {}'.format(word))
     print('answer = {}'.format(answer))
     print('-------------------------')
@@ -273,7 +290,16 @@ def check_words_on_site(url, function_check_html):
     i = 0
     for word, entry in dictionary.items():
         if 'answerIsProbablyNotNoun' in entry and entry['answerIsProbablyNotNoun'] not in ['noun', 'not noun']:
-            answer = check_word_in_site(word, url, function_check_html)
+            try:
+                answer = check_word_in_site(word, url, function_check_html)
+            except requests.exceptions.ConnectionError:
+                print("Ошибка: ConnectionError")
+                time.sleep(1)
+                save_json(dictionary)
+            except requests.exceptions.Timeout:
+                print("Ошибка: Timeout")
+                time.sleep(10)
+                save_json(dictionary)
             if answer is not None:
                 dictionary[word]['answerIsProbablyNotNoun'] = answer
                 i += 1
@@ -302,6 +328,8 @@ def main():
                     'function_check_html': check_word_in_academic}},
         {'text': 'Проверить подозрительные слова на goldlit.ru', 'function': check_words_on_site,
          'params': {'url': 'https://goldlit.ru/component/slog?words=', 'function_check_html': check_word_in_goldlit}},
+        {'text': 'Проверить подозрительные слова на morfologija.ru', 'function': check_words_on_site,
+         'params': {'url': 'http://www.morfologija.ru/словоформа/', 'function_check_html': check_word_in_morfologija}},
     ]
 
     while True:
@@ -321,7 +349,7 @@ def main():
 
 
 def test():
-    pass
+    check_word_in_site('мост', 'http://www.morfologija.ru/словоформа/', check_word_in_morfologija)
 
 
 if __name__ == '__main__':
