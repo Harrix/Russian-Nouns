@@ -361,17 +361,31 @@ def check_words_in_plural():
         if 'answerNeedToIncludePlural' in entry and entry['answerNeedToIncludePlural'] not in ['include', 'exclude']:
             is_initial_form = False
             is_as_form = False
-            for line in dictionary_forms:
+            index_initial_form = -1
+            index_as_form = -1
+            for index, line in enumerate(dictionary_forms):
                 if index_of(line, word + ',') == 0:
                     is_initial_form = True
+                    if index_initial_form == -1:
+                        index_initial_form = index
                 if index_of(line, ',' + word + ',') >= 0:
                     is_as_form = True
+                    if index_initial_form != -1 and index_as_form == index_initial_form:
+                        index_as_form = index
+                    if index_as_form == -1:
+                        index_as_form = index
                 if line.endswith(',' + word):
                     is_as_form = True
+                    if index_initial_form != -1 and index_as_form == index_initial_form:
+                        index_as_form = index
+                    if index_as_form == -1:
+                        index_as_form = index
             answer = None
             if is_initial_form:
                 answer = 'include'
             if not is_initial_form and is_as_form:
+                answer = 'exclude'
+            if is_initial_form and is_as_form and index_as_form != index_initial_form:
                 answer = 'exclude'
             print(word)
             if answer is not None:
