@@ -240,6 +240,10 @@ def check_word_in_goldlit(word, html):
         answer = 'not noun'
     if '<strong>Часть речи</strong>: наречие' in html:
         answer = 'not noun'
+    if '<strong>Часть речи</strong>: деепричастие' in html:
+        answer = 'not noun'
+    if '<strong>Часть речи</strong>: причастие' in html:
+        answer = 'not noun'
 
     if '<strong>Часть речи</strong>: существительное<br />' in html:
         answer = 'noun'
