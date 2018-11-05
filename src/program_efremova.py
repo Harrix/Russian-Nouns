@@ -319,6 +319,18 @@ def check_words_on_site(url, function_check_html):
     print('Проверка слов на {} завершена'.format(url))
 
 
+@function_execution_time
+@if_exist_json
+def define_words_as_nouns():
+    dictionary = read_json()
+    for word, entry in dictionary.items():
+        if 'answerIsProbablyNotNoun' in entry and entry['answerIsProbablyNotNoun'] not in ['noun', 'not noun']:
+            dictionary[word]['answerIsProbablyNotNoun'] = 'noun'
+    save_json(dictionary)
+    print('Все оставшиеся слова определены как сущестуительные')
+    statistics()
+
+
 @if_exist_dictionary
 def main():
     menu = [
@@ -340,6 +352,7 @@ def main():
          'params': {'url': 'https://goldlit.ru/component/slog?words=', 'function_check_html': check_word_in_goldlit}},
         {'text': 'Проверить подозрительные слова на morfologija.ru', 'function': check_words_on_site,
          'params': {'url': 'http://www.morfologija.ru/словоформа/', 'function_check_html': check_word_in_morfologija}},
+        {'text': 'Оставшиеся непроверенные слова определить как существительные', 'function': define_words_as_nouns},
     ]
 
     while True:
