@@ -372,16 +372,9 @@ def check_plural_word_in_goldlit(word, html):
 
     if '<strong>Начальная форма</strong>: {}'.format(word.upper()) in html:
         answer = 'include'
+    else:
+        answer = 'exclude'
 
-    return answer
-
-
-def check_plural_in_academic(word, html):
-    answer = None
-    regexp = r'</a><\/strong> — сущ\.(.*?)<\/p>\n<p class="src">' \
-             r'<a href="\/\/dic\.academic\.ru\/contents.nsf\/dic_synonims\/">Словарь синонимов<\/a><\/p>'
-    if re.search(re.escape(word) + regexp, html, re.S):
-        answer = 'include'
     return answer
 
 
@@ -506,9 +499,6 @@ def main():
         {'text': 'Проверить слова во мн. числе', 'function': check_words_in_plural},
         {'text': 'Проверить слова во мн. числе на wiktionary.org', 'function': check_plural_words_on_site,
          'params': {'url': 'https://ru.wiktionary.org/wiki/', 'function_check_html': check_plural_word_in_wiktionary}},
-        {'text': 'Проверить слова во мн. числе на dic.academic.ru', 'function': check_plural_words_on_site,
-         'params': {'url': 'https://dic.academic.ru/searchall.php?SWord=',
-                    'function_check_html': check_plural_in_academic}},
         {'text': 'Проверить слова во мн. числе на goldlit.ru', 'function': check_plural_words_on_site,
          'params': {'url': 'https://goldlit.ru/component/slog?words=', 'function_check_html': check_plural_word_in_goldlit}},
     ]
@@ -530,7 +520,7 @@ def main():
 
 
 def test():
-    check_word_in_site('стуаввввввлья', 'https://goldlit.ru/component/slog?words=', check_plural_word_in_goldlit)
+    check_word_in_site('нож', 'https://dic.academic.ru/searchall.php?SWord=', check_plural_in_academic)
 
 
 if __name__ == '__main__':
