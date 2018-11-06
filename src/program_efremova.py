@@ -122,6 +122,7 @@ def statistics():
     count_need_check_not_noun = 0
     count_plural_check = 0
     count_plural_need_check = 0
+    count_plural_check_need_include = 0
     count_plural_check_include = 0
     count_plural_check_exclude = 0
     count_with_capital_letter = 0
@@ -144,6 +145,8 @@ def statistics():
                 count_plural_need_check += 1
             if entry['answerNeedToIncludePlural'] == 'include':
                 count_plural_check_include += 1
+            if entry['answerNeedToIncludePlural'] == 'need include':
+                count_plural_check_need_include += 1
             if entry['answerNeedToIncludePlural'] == 'exclude':
                 count_plural_check_exclude += 1
         if word != word.lower():
@@ -161,6 +164,7 @@ def statistics():
     print('\tвсего: {}'.format(count_plural_check))
     print('\tнужно проверить: {}'.format(count_plural_need_check))
     print('\tпроверено: {}'.format(count_plural_check - count_plural_need_check))
+    print('\tрекомендуется включить: {}'.format(count_plural_check_need_include))
     print('\tвключаем: {}'.format(count_plural_check_include))
     print('\tисключаем: {}'.format(count_plural_check_exclude))
     print('Слова с большой буквы по Ефремовой:')
@@ -424,6 +428,8 @@ def main():
          'params': {'key': 'answerIsProbablyNotNoun', 'answer': ['null', 'noun', 'not noun'], 'invert': True}},
         {'text': 'Список непроверенных слов во мн. числе', 'function': print_list_of_words,
          'params': {'key': 'answerNeedToIncludePlural', 'answer': ['null']}},
+        {'text': 'Список рекомендуемых к включению слов во мн. числе', 'function': print_list_of_words,
+         'params': {'key': 'answerNeedToIncludePlural', 'answer': ['need include']}},
         {'text': 'Список включаемых проверенных слов во мн. числе', 'function': print_list_of_words,
          'params': {'key': 'answerNeedToIncludePlural', 'answer': ['include']}},
         {'text': 'Список невключаемых проверенных слов во мн. числе', 'function': print_list_of_words,
