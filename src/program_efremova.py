@@ -126,9 +126,14 @@ def statistics():
     count_plural_check_include = 0
     count_plural_check_exclude = 0
     count_with_capital_letter = 0
+    count_include = 0
+    count_exclude = 0
 
     for word, entry in dictionary.items():
         count += 1
+        is_exclude = False
+        if 'answerIsProbablyNotNoun' not in entry and 'answerNeedToIncludePlural' not in entry:
+            is_include = True
         if 'answerIsProbablyNotNoun' in entry:
             count_check += 1
             if entry['answerIsProbablyNotNoun'] == 'null':
@@ -139,6 +144,7 @@ def statistics():
                 count_need_check_noun += 1
             if entry['answerIsProbablyNotNoun'] == 'not noun':
                 count_need_check_not_noun += 1
+                is_exclude = True
         if 'answerNeedToIncludePlural' in entry:
             count_plural_check += 1
             if entry['answerNeedToIncludePlural'] == 'null':
@@ -149,8 +155,25 @@ def statistics():
                 count_plural_check_need_include += 1
             if entry['answerNeedToIncludePlural'] == 'exclude':
                 count_plural_check_exclude += 1
+                is_exclude = True
         if word != word.lower():
             count_with_capital_letter += 1
+            is_include = False
+            is_exclude = True
+
+        is_noun = True
+        if 'answerIsProbablyNotNoun' in entry:
+            if entry['answerIsProbablyNotNoun'] != 'noun':
+                is_noun = False
+        is_plural_include = True
+        if 'answerNeedToIncludePlural' in entry:
+            if entry['answerNeedToIncludePlural'] != 'include':
+                is_plural_include = False
+
+        if is_noun and is_plural_include and word == word.lower():
+            count_include += 1
+        if is_exclude:
+            count_exclude += 1
 
     print('Всего существительных по Ефремовой: {}'.format(count))
     print('Подозрительные (возможно не сущ.):')
@@ -169,6 +192,10 @@ def statistics():
     print('\tисключаем: {}'.format(count_plural_check_exclude))
     print('Слова с большой буквы по Ефремовой:')
     print('\tвсего: {}'.format(count_with_capital_letter))
+    print('Итого в итоговый список:')
+    print('\tнужно включить: {}'.format(count_include))
+    print('\tнужно исключить: {}'.format(count_exclude))
+    print('\tнеопределено: {}'.format(count - count_include - count_exclude))
 
 
 @function_execution_time
