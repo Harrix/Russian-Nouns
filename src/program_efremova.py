@@ -56,7 +56,7 @@ def function_execution_time(func):
 def index_of(string, substring):
     try:
         index = string.index(substring)
-    except:
+    except ValueError:
         index = -1
     return index
 
