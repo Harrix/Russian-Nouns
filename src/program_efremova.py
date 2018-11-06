@@ -169,7 +169,7 @@ def statistics():
 
 @function_execution_time
 @if_exist_json
-def print_list_of_words(key, answer):
+def print_list_of_words(key, answer, invert=False):
     def print_word():
         print(word)
         print('{} = {}'.format(key, entry[key]))
@@ -179,15 +179,14 @@ def print_list_of_words(key, answer):
     count = 0
     for word, entry in dictionary.items():
         if key in entry:
-            if answer == 'error' and key == 'answerIsProbablyNotNoun':
-                if entry[key] not in ['null', 'noun', 'not noun']:
+            if not invert:
+                if entry[key] in answer:
                     print_word()
                     count += 1
-                    continue
-
-            if entry[key] == answer:
-                print_word()
-                count += 1
+            else:
+                if entry[key] not in answer:
+                    print_word()
+                    count += 1
 
     print('Слов: {}'.format(count))
 
@@ -422,15 +421,15 @@ def main():
         {'text': 'Сгенерировать файл {}'.format(json_filename), 'function': generated_json},
         {'text': 'Статистика', 'function': statistics},
         {'text': 'Список непроверенных подозрительных слов', 'function': print_list_of_words,
-         'params': {'key': 'answerIsProbablyNotNoun', 'answer': 'null'}},
+         'params': {'key': 'answerIsProbablyNotNoun', 'answer': ['null']}},
         {'text': 'Список проверенных подозрительных слов с ошибкой 404 и др.', 'function': print_list_of_words,
-         'params': {'key': 'answerIsProbablyNotNoun', 'answer': 'error'}},
+         'params': {'key': 'answerIsProbablyNotNoun', 'answer': ['null', 'noun', 'not noun'], 'invert': True}},
         {'text': 'Список непроверенных слов во мн. числе', 'function': print_list_of_words,
-         'params': {'key': 'answerNeedToIncludePlural', 'answer': 'null'}},
+         'params': {'key': 'answerNeedToIncludePlural', 'answer': ['null']}},
         {'text': 'Список включаемых проверенных слов во мн. числе', 'function': print_list_of_words,
-         'params': {'key': 'answerNeedToIncludePlural', 'answer': 'include'}},
+         'params': {'key': 'answerNeedToIncludePlural', 'answer': ['include']}},
         {'text': 'Список невключаемых проверенных слов во мн. числе', 'function': print_list_of_words,
-         'params': {'key': 'answerNeedToIncludePlural', 'answer': 'exclude'}},
+         'params': {'key': 'answerNeedToIncludePlural', 'answer': ['exclude']}},
         {'text': 'Список слов с большой буквы', 'function': print_list_of_words_capital},
         {'text': 'Проверить подозрительные слова на wiktionary.org', 'function': check_words_on_site,
          'params': {'url': 'https://ru.wiktionary.org/wiki/', 'function_check_html': check_word_in_wiktionary}},
