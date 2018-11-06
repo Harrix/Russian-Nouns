@@ -353,6 +353,46 @@ def check_words_on_site(url, function_check_html):
     print('Проверка слов на {} завершена'.format(url))
 
 
+def check_plural_word_in_wiktionary(word, html):
+    answer = None
+
+    if '<title>{} — Викисловарь</title>'.format(word) in html:
+        answer = 'include'
+    else:
+        if '— Викисловарь</title>'.format(word) in html:
+            answer = 'exclude'
+
+    return answer
+
+
+@function_execution_time
+@if_exist_json
+def check_plural_words_on_site():
+    url = 'https://ru.wiktionary.org/wiki/'
+    function_check_html = check_plural_word_in_wiktionary
+    dictionary = read_json()
+    i = 0
+    for word, entry in dictionary.items():
+        if 'answerNeedToIncludePlural' in entry and entry['answerNeedToIncludePlural'] not in ['include']:
+            try:
+                answer = check_word_in_site(word, url, function_check_html)
+            except requests.exceptions.ConnectionError:
+                print("Ошибка: ConnectionError")
+                time.sleep(1)
+                save_json(dictionary)
+            except requests.exceptions.Timeout:
+                print("Ошибка: Timeout")
+                time.sleep(10)
+                save_json(dictionary)
+            if answer in ['include', 'exclude']:
+                dictionary[word]['answerNeedToIncludePlural'] = answer
+                i += 1
+                if i % 100 == 0:
+                    save_json(dictionary)
+    save_json(dictionary)
+    print('Проверка слов на {} завершена'.format(url))
+
+
 @function_execution_time
 @if_exist_json
 def define_words_as_nouns():
@@ -446,6 +486,7 @@ def main():
          'params': {'url': 'http://www.morfologija.ru/словоформа/', 'function_check_html': check_word_in_morfologija}},
         {'text': 'Оставшиеся непроверенные слова определить как существительные', 'function': define_words_as_nouns},
         {'text': 'Проверить слова во мн. числе', 'function': check_words_in_plural},
+        {'text': 'Проверить слова во мн. числе на wiktionary.org', 'function': check_plural_words_on_site},
     ]
 
     while True:
