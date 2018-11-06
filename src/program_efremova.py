@@ -187,6 +187,18 @@ def print_list_of_words(key, answer):
     print('Слов: {}'.format(count))
 
 
+@if_exist_json
+def print_list_of_words_capital():
+    dictionary = read_json()
+    count = 0
+    for word, entry in dictionary.items():
+        if word != word.lower():
+            print(word)
+            count += 1
+
+    print('Слов: {}'.format(count))
+
+
 def check_word_in_wiktionary(word, html):
     answer = None
 
@@ -414,6 +426,7 @@ def main():
          'params': {'key': 'answerNeedToIncludePlural', 'answer': 'include'}},
         {'text': 'Список невключаемых проверенных слов во мн. числе', 'function': print_list_of_words,
          'params': {'key': 'answerNeedToIncludePlural', 'answer': 'exclude'}},
+        {'text': 'Список слов с большой буквы', 'function': print_list_of_words_capital},
         {'text': 'Проверить подозрительные слова на wiktionary.org', 'function': check_words_on_site,
          'params': {'url': 'https://ru.wiktionary.org/wiki/', 'function_check_html': check_word_in_wiktionary}},
         {'text': 'Проверить подозрительные слова на dic.academic.ru', 'function': check_words_on_site,
