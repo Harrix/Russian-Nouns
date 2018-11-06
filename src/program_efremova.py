@@ -395,7 +395,7 @@ def check_plural_words_on_site(url, function_check_html):
                 print("Ошибка: Timeout")
                 time.sleep(10)
                 save_json(dictionary)
-            if answer in ['need include','include', 'exclude']:
+            if answer in ['need include', 'include', 'exclude']:
                 dictionary[word]['answerNeedToIncludePlural'] = answer
                 i += 1
                 if i % 100 == 0:
@@ -525,7 +525,8 @@ def main():
         {'text': 'Проверить слова во мн. числе на wiktionary.org', 'function': check_plural_words_on_site,
          'params': {'url': 'https://ru.wiktionary.org/wiki/', 'function_check_html': check_plural_word_in_wiktionary}},
         {'text': 'Проверить слова во мн. числе на goldlit.ru', 'function': check_plural_words_on_site,
-         'params': {'url': 'https://goldlit.ru/component/slog?words=', 'function_check_html': check_plural_word_in_goldlit}},
+         'params': {'url': 'https://goldlit.ru/component/slog?words=',
+                    'function_check_html': check_plural_word_in_goldlit}},
         {'text': 'Определить слово во мн. числе как включаемое', 'function': define_word_as_include},
         {'text': 'Оставшиеся непроверенные слова мн. числе исключить', 'function': define_words_as_exclude},
     ]
