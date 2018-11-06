@@ -406,6 +406,31 @@ def check_plural_words_on_site(url, function_check_html):
 
 @function_execution_time
 @if_exist_json
+def define_words_as_exclude():
+    dictionary = read_json()
+    for word, entry in dictionary.items():
+        if 'answerNeedToIncludePlural' in entry and entry['answerNeedToIncludePlural'] not in ['include']:
+            dictionary[word]['answerNeedToIncludePlural'] = 'exclude'
+    save_json(dictionary)
+    print('Все оставшиеся слова во мн. числе исключены')
+    statistics()
+
+
+@function_execution_time
+@if_exist_json
+def define_word_as_include():
+    dictionary = read_json()
+    word = input('Введите слово: ')
+    if word in dictionary:
+        dictionary[word]['answerNeedToIncludePlural'] = 'include'
+        save_json(dictionary)
+        print('Слово вручную добавлено')
+    else:
+        print('Такого слова нет в словаре')
+
+
+@function_execution_time
+@if_exist_json
 def define_words_as_nouns():
     dictionary = read_json()
     for word, entry in dictionary.items():
@@ -501,6 +526,8 @@ def main():
          'params': {'url': 'https://ru.wiktionary.org/wiki/', 'function_check_html': check_plural_word_in_wiktionary}},
         {'text': 'Проверить слова во мн. числе на goldlit.ru', 'function': check_plural_words_on_site,
          'params': {'url': 'https://goldlit.ru/component/slog?words=', 'function_check_html': check_plural_word_in_goldlit}},
+        {'text': 'Определить слово во мн. числе как включаемое', 'function': define_word_as_include},
+        {'text': 'Оставшиеся непроверенные слова мн. числе исключить', 'function': define_words_as_exclude},
     ]
 
     while True:
