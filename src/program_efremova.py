@@ -358,6 +358,8 @@ def check_plural_word_in_wiktionary(word, html):
 
     if '<title>{} — Викисловарь</title>'.format(word) in html:
         answer = 'need include'
+        if 'формы ед. ч. не используются' in html:
+            answer = 'include'
     else:
         if '— Викисловарь</title>'.format(word) in html:
             answer = 'exclude'
@@ -367,9 +369,7 @@ def check_plural_word_in_wiktionary(word, html):
 
 @function_execution_time
 @if_exist_json
-def check_plural_words_on_site():
-    url = 'https://ru.wiktionary.org/wiki/'
-    function_check_html = check_plural_word_in_wiktionary
+def check_plural_words_on_site(url, function_check_html):
     dictionary = read_json()
     i = 0
     for word, entry in dictionary.items():
@@ -486,7 +486,8 @@ def main():
          'params': {'url': 'http://www.morfologija.ru/словоформа/', 'function_check_html': check_word_in_morfologija}},
         {'text': 'Оставшиеся непроверенные слова определить как существительные', 'function': define_words_as_nouns},
         {'text': 'Проверить слова во мн. числе', 'function': check_words_in_plural},
-        {'text': 'Проверить слова во мн. числе на wiktionary.org', 'function': check_plural_words_on_site},
+        {'text': 'Проверить слова во мн. числе на wiktionary.org', 'function': check_plural_words_on_site,
+         'params': {'url': 'https://ru.wiktionary.org/wiki/', 'function_check_html': check_plural_word_in_wiktionary}},
     ]
 
     while True:
