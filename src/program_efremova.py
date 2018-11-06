@@ -396,7 +396,7 @@ def check_words_in_plural():
                         index_as_form = index
             answer = None
             if is_initial_form:
-                answer = 'include'
+                answer = 'need include'
             if not is_initial_form and is_as_form:
                 answer = 'exclude'
             if is_initial_form and is_as_form and index_as_form != index_initial_form:
