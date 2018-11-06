@@ -187,7 +187,6 @@ def print_list_of_words(key, answer, invert=False):
                 if entry[key] not in answer:
                     print_word()
                     count += 1
-
     print('Слов: {}'.format(count))
 
 
@@ -199,7 +198,6 @@ def print_list_of_words_capital():
         if word != word.lower():
             print(word)
             count += 1
-
     print('Слов: {}'.format(count))
 
 
