@@ -357,7 +357,7 @@ def check_plural_word_in_wiktionary(word, html):
     answer = None
 
     if '<title>{} — Викисловарь</title>'.format(word) in html:
-        answer = 'include'
+        answer = 'need include'
     else:
         if '— Викисловарь</title>'.format(word) in html:
             answer = 'exclude'
@@ -373,7 +373,7 @@ def check_plural_words_on_site():
     dictionary = read_json()
     i = 0
     for word, entry in dictionary.items():
-        if 'answerNeedToIncludePlural' in entry and entry['answerNeedToIncludePlural'] not in ['include']:
+        if 'answerNeedToIncludePlural' in entry and entry['answerNeedToIncludePlural'] not in ['exclude']:
             try:
                 answer = check_word_in_site(word, url, function_check_html)
             except requests.exceptions.ConnectionError:
@@ -384,7 +384,7 @@ def check_plural_words_on_site():
                 print("Ошибка: Timeout")
                 time.sleep(10)
                 save_json(dictionary)
-            if answer in ['include', 'exclude']:
+            if answer in ['need include','include', 'exclude']:
                 dictionary[word]['answerNeedToIncludePlural'] = answer
                 i += 1
                 if i % 100 == 0:
