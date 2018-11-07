@@ -8,6 +8,12 @@ import os
 dictionary_filename = 'efremova.txt'
 dictionary_forms_filename = 'odict.csv'
 json_filename = 'data.json'
+output_without_filter_json_filename = 'russian_nouns_with_definition_without_filter.json'
+output_json_filename = 'russian_nouns_with_definition.json'
+output_without_filter_txt_filename = 'russian_nouns_without_filter.txt'
+output_txt_filename = 'russian_nouns.txt'
+output_with_definition_without_filter_txt_filename = 'russian_nouns_with_definition_without_filter.txt'
+output_with_definition_txt_filename = 'russian_nouns_with_definition.txt'
 
 
 def if_exist_dictionary(func):
@@ -61,19 +67,27 @@ def index_of(string, substring):
     return index
 
 
-def save_json(dictionary):
-    file = Path(json_filename)
+def save_json(dictionary, filename=json_filename):
+    file = Path(filename)
     action = 'обновлен' if file.is_file() else 'создан'
-    with open(json_filename, 'w', encoding='utf8') as outfile:
+    with open(filename, 'w', encoding='utf8') as outfile:
         json.dump(dictionary, outfile, ensure_ascii=False, indent=4)
-    print('Файл {} {}'.format(json_filename, action))
+    print('Файл {} {}'.format(filename, action))
 
 
-def read_json():
-    file = Path(json_filename)
+def save_txt(array, filename):
+    file = Path(filename)
+    action = 'обновлен' if file.is_file() else 'создан'
+    with open(filename, 'w', encoding='utf8') as f:
+        f.write('\n'.join(array))
+    print('Файл {} {}'.format(filename, action))
+
+
+def read_json(filename=json_filename):
+    file = Path(filename)
     with open(file, encoding='utf8') as f:
         dictionary = json.loads(f.read())
-    print('Файл {} открыт'.format(json_filename))
+    print('Файл {} открыт'.format(filename))
     return dictionary
 
 
@@ -87,6 +101,12 @@ def remove_all_temporary_files():
             print('Файл {} не существует'.format(json_filename))
 
     remove(json_filename)
+    remove(output_without_filter_json_filename)
+    remove(output_json_filename)
+    remove(output_without_filter_txt_filename)
+    remove(output_txt_filename)
+    remove(output_with_definition_without_filter_txt_filename)
+    remove(output_with_definition_txt_filename)
     print('Временных файлов больше нет')
 
 
@@ -519,6 +539,59 @@ def check_words_in_plural():
     statistics()
 
 
+@function_execution_time
+@if_exist_json
+def generate_output():
+    dictionary = read_json()
+    count_clear = 0
+    dictionary_without_filter = {}
+    dictionary_clear = {}
+    list_without_filter = []
+    list_clear = []
+    list_with_definition_without_filter = []
+    list_with_definition_clear = []
+    for word, entry in dictionary.items():
+        entry_new = entry.copy()
+        if 'answerIsProbablyNotNoun' in entry_new:
+            del entry_new['answerIsProbablyNotNoun']
+        if 'answerNeedToIncludePlural' in entry_new:
+            del entry_new['answerNeedToIncludePlural']
+        dictionary_without_filter[word] = entry_new
+        list_without_filter.append(word)
+        list_with_definition_without_filter.append(word + ': ' + entry['definition'])
+
+        is_noun = True
+        if 'answerIsProbablyNotNoun' in entry:
+            if entry['answerIsProbablyNotNoun'] != 'noun':
+                is_noun = False
+        is_plural_include = True
+        if 'answerNeedToIncludePlural' in entry:
+            if entry['answerNeedToIncludePlural'] != 'include':
+                is_plural_include = False
+
+        if is_noun and is_plural_include and word == word.lower():
+            count_clear += 1
+            dictionary_clear[word] = entry_new
+            list_clear.append(word)
+            list_with_definition_clear.append(word + ': ' + entry['definition'])
+
+    save_json(dictionary_without_filter, output_without_filter_json_filename)
+    save_json(dictionary_without_filter, output_json_filename)
+
+    sorted(list_without_filter)
+    sorted(list_clear)
+    sorted(list_with_definition_without_filter)
+    sorted(list_with_definition_clear)
+
+    save_txt(list_without_filter, output_without_filter_txt_filename)
+    save_txt(list_clear, output_txt_filename)
+    save_txt(list_with_definition_without_filter, output_with_definition_without_filter_txt_filename)
+    save_txt(list_with_definition_clear, output_with_definition_txt_filename)
+
+    print('Слов в файлах без фильтра: {}'.format(len(dictionary_without_filter)))
+    print('Слов в отфильтрованных файлах: {}'.format(count_clear))
+
+
 @if_exist_dictionary
 def main():
     menu = [
@@ -556,6 +629,7 @@ def main():
                     'function_check_html': check_plural_word_in_goldlit}},
         {'text': 'Определить слово во мн. числе как включаемое', 'function': define_word_as_include},
         {'text': 'Оставшиеся непроверенные слова мн. числе исключить', 'function': define_words_as_exclude},
+        {'text': 'Сформировать итоговые файлы', 'function': generate_output},
     ]
 
     while True:
@@ -575,7 +649,7 @@ def main():
 
 
 def test():
-    check_word_in_site('нож', 'https://dic.academic.ru/searchall.php?SWord=', check_plural_in_academic)
+    pass
 
 
 if __name__ == '__main__':
